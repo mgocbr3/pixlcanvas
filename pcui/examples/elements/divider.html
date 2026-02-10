@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI Divider</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { Divider, LabelGroup, TextInput } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const aboveGroup = new LabelGroup({
+            field: new TextInput(),
+            text: 'Above Divider'
+        });
+        document.body.appendChild(aboveGroup.dom);
+
+        const divider = new Divider();
+        document.body.appendChild(divider.dom);
+
+        const belowGroup = new LabelGroup({
+            field: new TextInput(),
+            text: 'Below Divider'
+        });
+        document.body.appendChild(belowGroup.dom);
+</script>
+</body>
+</html>

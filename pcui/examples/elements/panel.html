@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI Panel</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { LabelGroup, Panel, TextInput } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const panel = new Panel({
+            collapseHorizontally: false,
+            collapsible: true,
+            collapsed: false,
+            headerText: 'Panel Header Text (click to collapse)'
+        });
+
+        for (let i = 1; i <= 10; i++) {
+            const labelGroup = new LabelGroup({
+                text: 'Property ' + i,
+                field: new TextInput()
+            })
+            panel.append(labelGroup);
+        }
+
+        document.body.appendChild(panel.dom);
+    </script>
+</body>
+</html>

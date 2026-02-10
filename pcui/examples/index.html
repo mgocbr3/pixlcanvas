@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI Example Browser</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body, html {
+            background-color: #364346;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        iframe {
+            flex-grow: 1;
+            border: 2px solid rgb(175, 175, 175);
+        }
+
+        .pcui-treeview-item-text, 
+        .pcui-treeview-item-icon {
+            font-size: 14px;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { Container, Panel, TextInput, TreeView, TreeViewItem } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const root = new Container({
+            flex: true,
+            flexDirection: 'row',
+            width: '100%',
+            height: '100%'
+        });
+        document.body.appendChild(root.dom);
+
+        const panel = new Panel({
+            collapseHorizontally: true,
+            collapsible: true,
+            scrollable: true,
+            headerText: 'PCUI Example Browser',
+            width: 200,
+            height: '100%',
+            resizable: 'right',
+            resizeMin: 150,
+            resizeMax: 500
+        });
+
+        const treeView = new TreeView({
+            allowRenaming: false,
+            allowReordering: false,
+            allowDrag: false
+        });
+
+        const iframe = document.createElement('iframe');
+
+        const categories = [
+            {
+                categoryName: 'Elements',
+                examples: [
+                    'ArrayInput',
+                    'BooleanInput',
+                    'Button',
+                    'Canvas',
+                    'Code',
+                    'ColorPicker',
+                    'Divider',
+                    'GradientPicker',
+                    'GridView',
+                    'InfoBox',
+                    'Label',
+                    'LabelGroup',
+                    'Menu',
+                    'NumericInput',
+                    'Overlay',
+                    'Panel',
+                    'Progress',
+                    'RadioButton',
+                    'SelectInput',
+                    'SliderInput',
+                    'Spinner',
+                    'TextAreaInput',
+                    'TextInput',
+                    'TreeView',
+                    'VectorInput'
+                ]
+            },
+            {
+                categoryName: 'Utilities',
+                examples: [
+                    'Icon Browser',
+                ]
+            }
+        ];
+
+        for (const category of categories) {
+            const categoryItem = new TreeViewItem({
+                open: true,
+                text: category.categoryName
+            });
+            treeView.append(categoryItem);
+
+            for (const example of category.examples) {
+                const item = new TreeViewItem({
+                    text: example
+                });
+                item.on('select', () => {
+                    const path = category.categoryName.toLowerCase();
+                    const name = example.toLowerCase().replace(/ /g, '-');
+                    iframe.src = `${path}/${name}.html`;
+                });
+
+                categoryItem.append(item);
+            }
+        }
+
+        const filter = new TextInput({
+            keyChange: true,
+            placeholder: 'Filter',
+            width: 'calc(100% - 14px)'
+        });
+        filter.on('change', (value) => {
+            treeView.filter = value;
+        });
+
+        root.append(panel);
+        panel.append(filter);
+        panel.append(treeView);
+        root.dom.appendChild(iframe);
+    </script>
+</body>
+</html>

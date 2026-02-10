@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI GridView</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+
+        .icon-info > .pcui-label {
+            font-size: 16px;
+            line-height: 2;
+        }
+        
+        .pcui-gridview-item-text::before {
+            font-family: pc-icon;
+            content: attr(data-before);
+            padding-right: 10px;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { GridView, GridViewItem } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const gridView = new GridView({
+            multiSelect: false
+        });
+
+        const ranges = [
+            [ 111, 392 ],
+            [ 394, 415 ],
+            [ 421, 426 ],
+            [ 430, 439 ]
+        ];
+
+        for (const range of ranges) {
+            for (let i = range[0]; i <= range[1]; i++) {
+                const item = new GridViewItem({
+                    class: 'icon-info',
+                    text: `E${i}`
+                });
+
+                const span = item.dom.childNodes[0];
+                const icon = String.fromCodePoint(parseInt(`E${i}`, 16));
+                span.setAttribute('data-before', icon);
+
+                gridView.append(item);
+            }
+        }
+
+        document.body.appendChild(gridView.dom);
+    </script>
+</body>
+</html>

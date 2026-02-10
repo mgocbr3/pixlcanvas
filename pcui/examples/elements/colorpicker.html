@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI ColorPicker</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+
+        .pcui-label-group > .pcui-label:first-child {
+            font-size: 16px;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { ColorPicker, LabelGroup } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const rgb = new ColorPicker();
+        const rgbGroup = new LabelGroup({
+            field: rgb,
+            text: 'RGB:'
+        });
+
+        const rgba = new ColorPicker({
+            channels: 4
+        });
+        const rgbaGroup = new LabelGroup({
+            field: rgba,
+            text: 'RGB + Alpha:'
+        });
+
+        document.body.appendChild(rgbGroup.dom);
+        document.body.appendChild(rgbaGroup.dom);
+    </script>
+</body>
+</html>

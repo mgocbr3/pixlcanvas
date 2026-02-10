@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI Menu</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { Label, Menu } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const label = new Label({
+            text: 'Right click to open menu'
+        });
+        document.body.appendChild(label.dom);
+
+        const menu = new Menu({
+            items: [
+                {
+                    text: 'Copy',
+                    icon: 'E351',
+                    shortcut: 'Ctrl+C'
+                },
+                {
+                    text: 'Paste',
+                    icon: 'E348',
+                    shortcut: 'Ctrl+V'
+                },
+                {
+                    text: 'Delete',
+                    icon: 'E124',
+                    shortcut: 'Delete'
+                },
+                {
+                    text: 'More Options',
+                    items: [
+                        {
+                            text: 'Undo',
+                            shortcut: 'Ctrl+Z'
+                        },
+                        {
+                            text: 'Redo',
+                            shortcut: 'Ctrl+Y'
+                        },
+                        {
+                            text: 'Select All',
+                            shortcut: 'Ctrl+A'
+                        }
+                    ]
+                }
+            ]
+        });
+
+        document.body.appendChild(menu.dom);
+
+        window.addEventListener('contextmenu', (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            menu.hidden = false;
+            menu.position(event.clientX, event.clientY);
+        });
+    </script>
+</body>
+</html>

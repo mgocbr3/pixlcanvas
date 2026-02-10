@@ -1,0 +1,8 @@
+services:
+  playcanvas-editor:
+    build: .
+    container_name: playcanvas-editor
+    env_file:
+      - .env
+    volumes:
+      - ./test-results:/usr/src/test/test-results

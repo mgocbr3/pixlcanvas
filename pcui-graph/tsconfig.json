@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "allowJs": true,
+        "target": "es6",
+        "jsx": "react",
+        "types": ["react"],
+        "lib": [
+            "es2019",
+            "dom",
+            "dom.iterable"
+        ],
+        "esModuleInterop" : true,
+        "sourceMap": true,
+        "moduleResolution": "node"
+    },
+    "include": ["./src/index.js"],
+    "exclude": ["node_modules/**/*", "node_modules"]
+}

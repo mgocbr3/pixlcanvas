@@ -1,0 +1,19 @@
+import type { Meta, StoryObj } from '@storybook/react-webpack5';
+import * as React from 'react';
+import { action } from 'storybook/actions';
+
+import { TextInput } from './component';
+
+import '../../scss/index.js';
+
+const meta: Meta<typeof TextInput> = {
+    title: 'Components/TextInput',
+    component: TextInput
+};
+
+export default meta;
+type Story = StoryObj<typeof TextInput>;
+
+export const Main: Story = {
+    render: args => <TextInput onChange={action('value-change')} {...args} />
+};

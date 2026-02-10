@@ -1,0 +1,13 @@
+import { Element } from '../Element/component';
+import { ElementArgs } from '../Element/index';
+
+import { Divider as DividerClass } from './index';
+
+/**
+ * Represents a vertical division between two elements
+ */
+class Divider extends Element<ElementArgs, any> {
+    static ctor = DividerClass;
+}
+
+export { Divider };

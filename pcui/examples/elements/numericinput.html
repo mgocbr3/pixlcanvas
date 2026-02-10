@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI NumericInput</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+
+        .pcui-element.pcui-label-group > .pcui-label:first-child {
+            width: 125px;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { InfoBox, LabelGroup, NumericInput } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const numericInput = new NumericInput();
+
+        const labelGroup = new LabelGroup({
+            field: numericInput,
+            text: 'Enter a number:'
+        });
+
+        const infoBox = new InfoBox({
+            icon: 'E400',
+            text: 'NumericInput also supports expressions. For example, you can enter "10 * (2 + 3)" to get a value of 50.'
+        });
+
+        document.body.appendChild(labelGroup.dom);
+        document.body.appendChild(infoBox.dom);
+    </script>
+</body>
+</html>

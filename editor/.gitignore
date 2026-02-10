@@ -1,0 +1,11 @@
+.env*
+node_modules
+.sass-cache
+/.idea
+dist
+/js/realtime/share.uncompressed.js
+.npmrc
+/.vscode
+/.cursor
+modules/editor-api/types
+/test-results

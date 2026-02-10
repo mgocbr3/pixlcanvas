@@ -1,0 +1,106 @@
+.pcui-menu-item {
+    position: relative;
+    background-color: $bcg-darkest;
+    width: auto;
+}
+
+.pcui-menu-item-children {
+    box-shadow: 0 0 8px rgb(0 0 0 / 60%);
+    position: absolute;
+    z-index: 1;
+    left: 100%;
+    top: 0;
+    opacity: 0;
+    transition: opacity 100ms, visibility 100ms;
+    visibility: hidden;
+}
+
+.pcui-menu-item:hover {
+    > .pcui-menu-item-children {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.pcui-menu-item-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-width: 158px;
+    color: $text-dark;
+    border-bottom: 1px solid color.mix($bcg-darkest, $bcg-dark, 50%);
+    cursor: pointer;
+
+    &:hover {
+        color: $text-primary;
+        background-color: $text-darkest;
+    }
+
+    > .pcui-label {
+        transition: none;
+    }
+}
+
+.pcui-menu-item:last-child {
+    > .pcui-menu-item-content {
+        border-bottom: none;
+    }
+}
+
+// Text label - use inline-flex to properly align icon and text
+.pcui-menu-item-content > .pcui-label:not(.pcui-menu-item-shortcut) {
+    display: inline-flex;
+    align-items: center;
+    color: inherit;
+
+    &[data-icon]::before {
+        content: attr(data-icon);
+
+        @extend .font-icon;
+
+        font-weight: 100;
+        margin-right: $element-margin;
+    }
+}
+
+// Submenu arrow for items with children
+.pcui-menu-item-has-children {
+    & > .pcui-menu-item-content > .pcui-label:not(.pcui-menu-item-shortcut)::after {
+        content: '\E160';
+
+        @extend .font-icon;
+
+        position: absolute;
+        right: $element-margin;
+    }
+
+    & > .pcui-menu-item-content > .pcui-label:not(.pcui-menu-item-shortcut) {
+        padding-right: 32px;
+    }
+}
+
+// Shortcut label - push to right with auto margin
+.pcui-menu-item-shortcut {
+    margin-left: auto;
+    color: inherit;
+
+    &:not(:empty) {
+        padding-left: 16px;
+    }
+}
+
+.pcui-menu-item.pcui-disabled {
+    .pcui-menu-item-content {
+        cursor: default;
+
+        &:hover {
+            color: $text-dark;
+            background-color: transparent;
+        }
+
+        & > .pcui-label {
+            cursor: default;
+            opacity: $disabled-opacity;
+        }
+    }
+}

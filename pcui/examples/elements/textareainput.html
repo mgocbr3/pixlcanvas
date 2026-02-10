@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI TextAreaInput</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { TextAreaInput } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const textAreaInput1 = new TextAreaInput({
+            readOnly: true,
+            value: 'This is a read-only, fixed size TextAreaInput.'
+        });
+        document.body.appendChild(textAreaInput1.dom);
+
+        const textAreaInput2 = new TextAreaInput({
+            resizable: 'vertical',
+            width: 500,
+            value: 'This is an editable, resizable TextAreaInput. Try dragging the resize handle. The element also supports Shift-Enter for new lines.'
+        });
+        document.body.appendChild(textAreaInput2.dom);
+    </script>
+</body>
+</html>

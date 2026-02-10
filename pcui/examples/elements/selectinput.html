@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI SelectInput</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+
+        .pcui-element.pcui-label-group > .pcui-label:first-child {
+            font-size: 14px;
+            width: 175px;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { LabelGroup, Panel, SelectInput } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles';
+
+        const select = new SelectInput({
+            options: [
+                { t: 'Option 1', v: 1 },
+                { t: 'Option 2', v: 2 },
+                { t: 'Option 3', v: 3 },
+                { t: 'Default', v: 4 }
+            ],
+            defaultValue: 4,
+            type: 'number'
+        });
+        const labelGroup1 = new LabelGroup({
+            text: 'Predefined Options',
+            field: select
+        });
+
+        const selectWithFilter = new SelectInput({
+            allowInput: true,
+            options: [
+                { t: 'Option 1', v: 1 },
+                { t: 'Option 2', v: 2 },
+                { t: 'Option 3', v: 3 },
+                { t: 'Default', v: 4 }
+            ],
+            defaultValue: 4,
+            type: 'number'
+        });
+        const labelGroup2 = new LabelGroup({
+            text: 'Predefined Options + Filter',
+            field: selectWithFilter
+        });
+
+        const selectTags = new SelectInput({
+            multiSelect: true,
+            options: [
+                { t: 'Angular', v: 'angular' },
+                { t: 'React', v: 'react' },
+                { t: 'Svelte', v: 'svelte' },
+                { t: 'Vue', v: 'vue' }
+            ],
+            value: ['react', 'vue']
+        });
+        const labelGroup3 = new LabelGroup({
+            text: 'Predefined Tags',
+            field: selectTags
+        });
+
+        const selectTagsWithFilter = new SelectInput({
+            allowInput: true,
+            multiSelect: true,
+            placeholder: 'Type to Filter Tags...',
+            options: [
+                { t: 'C++', v: 'cpp' },
+                { t: 'JavaScript', v: 'javascript' },
+                { t: 'Python', v: 'python' },
+                { t: 'TypeScript', v: 'typescript' }
+            ],
+            value: ['javascript']
+        });
+        const labelGroup4 = new LabelGroup({
+            text: 'Predefined Tags + Filter',
+            field: selectTagsWithFilter
+        });
+
+        const selectTagsUser = new SelectInput({
+            allowInput: true,
+            allowCreate: true,
+            multiSelect: true,
+            placeholder: 'Type to Add Tags...',
+            options: [],  // No predefined options
+            value: []     // Start empty
+        });
+        const labelGroup5 = new LabelGroup({
+            text: 'User-Created Tags',
+            field: selectTagsUser
+        });
+
+        // Basic SelectInputs Panel
+        const basicPanel = new Panel({
+            headerText: 'Basic SelectInputs',
+            collapsible: true,
+            collapsed: false,
+            width: 500
+        });
+        basicPanel.append(labelGroup1);
+        basicPanel.append(labelGroup2);
+
+        // Tags-based SelectInputs Panel
+        const tagsPanel = new Panel({
+            headerText: 'Tags-based SelectInputs',
+            collapsible: true,
+            collapsed: false,
+            width: 500
+        });
+        tagsPanel.append(labelGroup3);
+        tagsPanel.append(labelGroup4);
+        tagsPanel.append(labelGroup5);
+
+        document.body.appendChild(basicPanel.dom);
+        document.body.appendChild(tagsPanel.dom);
+    </script>
+</body>
+</html>

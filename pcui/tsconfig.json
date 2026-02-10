@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "allowJs": true,
+        "target": "es2020",
+        "module": "esnext",
+        "jsx": "react",
+        "types": ["react", "react-dom", "webxr"],
+        "lib": [
+            "es2020",
+            "dom",
+            "dom.iterable"
+        ],
+        "esModuleInterop": true,
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["src/**/*.tsx"]
+}

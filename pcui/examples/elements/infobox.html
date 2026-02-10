@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI InfoBox</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { InfoBox } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const info = new InfoBox({
+            unsafe: true,
+            icon: 'E400',
+            text: 'An info box can be used to display information to the user. It can contain a title, icon and text. You can even include HTML such as <a href="https://github.com/playcanvas/pcui" target="_none">hyperlinks</a> if you set the unsafe property of the info box to true!',
+            title: 'Info Box'
+        });
+
+        document.body.appendChild(info.dom);
+    </script>
+</body>
+</html>

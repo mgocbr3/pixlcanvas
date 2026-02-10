@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI Canvas</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { Canvas } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        const canvas = new Canvas({
+            useDevicePixelRatio: true
+        });
+        canvas.resize(512, 512);
+
+        // draw a smiling face with the 2D canvas API
+        const ctx = canvas.dom.getContext('2d');
+
+        // face
+        ctx.beginPath();
+        ctx.arc(256, 256, 200, 0, 2 * Math.PI);
+        ctx.fillStyle = 'yellow';
+        ctx.fill();
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+
+        // left eye
+        ctx.beginPath();
+        ctx.arc(200, 200, 50, 0, 2 * Math.PI);
+        ctx.fillStyle = 'black';
+        ctx.fill();
+
+        // right eye
+        ctx.beginPath();
+        ctx.arc(312, 200, 50, 0, 2 * Math.PI);
+        ctx.fillStyle = 'black';
+        ctx.fill();
+
+        // mouth
+        ctx.beginPath();
+        ctx.arc(256, 256, 100, 0, Math.PI);
+        ctx.stroke();
+
+        document.body.appendChild(canvas.dom);
+    </script>
+</body>
+</html>

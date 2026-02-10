@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PCUI VectorInput</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #364346;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "@playcanvas/observer": "../../node_modules/@playcanvas/observer/dist/index.mjs",
+                "@playcanvas/pcui": "../../dist/module/src/index.mjs",
+                "@playcanvas/pcui/styles": "../../styles/dist/index.mjs"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { LabelGroup, VectorInput } from '@playcanvas/pcui';
+        import '@playcanvas/pcui/styles'
+
+        for (let i = 2; i <= 4; i++) {
+            const group = new LabelGroup({
+                text: `${i}D Vector`,
+                field: new VectorInput({
+                    dimensions: i,
+                    min: 0,
+                    max: 1,
+                    placeholder: ['X', 'Y', 'Z', 'W'].slice(0, i),
+                    precision: 4,
+                    step: 0.01
+                })
+            });
+            document.body.appendChild(group.dom);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+engine/examples/assets/models/pbr-house.glb filter=lfs diff=lfs merge=lfs -text
