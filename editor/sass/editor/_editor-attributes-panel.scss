@@ -652,7 +652,7 @@
                     width: 22px;
                     height: 22px;
                     line-height: 20px;
-                    background-color: #364346;
+                    background-color: #151926;
                     cursor: pointer;
 
                     @extend .font-icon;
@@ -662,7 +662,7 @@
 
                     &:hover {
                         color: $error-secondary;
-                        background-color: #20292b;
+                        background-color: #11141b;
                     }
 
                     &::after {
@@ -764,7 +764,7 @@
 
                     &:hover {
                         color: $error-secondary;
-                        background-color: #20292b;
+                        background-color: #11141b;
                     }
 
                     &::after {
@@ -1128,7 +1128,7 @@
                                     text-align: center;
 
                                     &:hover {
-                                        background-color: #20292b;
+                                        background-color: #11141b;
                                     }
 
                                     &.error {
@@ -1153,7 +1153,7 @@
 
                                     &:hover {
                                         color: $error-secondary;
-                                        background-color: #20292b;
+                                        background-color: #11141b;
                                     }
 
                                     &::after {
@@ -1227,7 +1227,7 @@
 
                     &:hover {
                         color: $text-active;
-                        background-color: #20292b;
+                        background-color: #11141b;
                     }
 
                     &.disabled:hover {
@@ -1779,7 +1779,7 @@
 
                     &:hover {
                         color: $text-active;
-                        background-color: #20292b;
+                        background-color: #11141b;
                     }
                 }
 
@@ -1919,7 +1919,7 @@
         width: 32px;
         height: 32px;
         border: none;
-        color: #9ba1a3;
+        color: #d2d6e0;
         font-size: 16px;
         background-color: transparent;
         border-radius: 0;
@@ -1931,18 +1931,18 @@
 
         &.disabled {
             opacity: 1;
-            color: color.mix(#9ba1a3, #364346, 30%);
+            color: color.mix(#d2d6e0, #151926, 30%);
 
             &:hover,
             &:focus {
-                color: color.mix(#9ba1a3, #364346, 30%);
+                color: color.mix(#d2d6e0, #151926, 30%);
                 background-color: transparent;
             }
         }
 
         &:hover,
         &:focus {
-            color: #fff;
+            color: #f2f5fb;
             background-color: $bcg-darkest;
         }
 

@@ -2,7 +2,7 @@
 
 $bright-red: #e74c3c;
 $bright-yellow: #f1c40f;
-$status-info: #b1b8ba;
+$status-info: #d2d6e0;
 $status-error: $bright-red;
 $status-warn: $bright-yellow;
 
@@ -36,7 +36,7 @@ $status-warn: $bright-yellow;
             background-color: $bcg-darkest;
 
             &:hover {
-                color: #fff;
+                color: #f2f5fb;
                 cursor: pointer;
             }
 
@@ -71,7 +71,7 @@ $status-warn: $bright-yellow;
                     }
     
                     &:hover {
-                        color: #fff;
+                        color: #f2f5fb;
                     }
                 }
             }
@@ -89,7 +89,7 @@ $status-warn: $bright-yellow;
                     }
     
                     &:hover {
-                        color: #fff;
+                        color: #f2f5fb;
                     }
                 }
             }
@@ -175,7 +175,7 @@ $status-warn: $bright-yellow;
             border-right: 1px solid $border-primary;
 
             &:hover {
-                color: #fff;
+                color: #f2f5fb;
                 background-color: $bcg-darkest;
                 cursor: pointer;
             }
@@ -270,7 +270,7 @@ $status-warn: $bright-yellow;
 
             .console-item-counter {
                 color: $bcg-darker;
-                background-color: #b1b8ba;
+                background-color: #d2d6e0;
                 font-weight: bold;
                 font-size: 12px;
                 text-align: center;

@@ -128,7 +128,7 @@ editor.once('load', () => {
         const bubble = editor.call(
             'guide:bubble',
             'Main Menu',
-            'The <span style="display:inline-block;background-image:url(\'https://playcanvas.com/static-assets/images/editor_logo.png\');width:18px;height:18px;background-size:36px 18px;background-position:-18px 0;vertical-align:text-bottom;"></span> main menu and toolbar has every command available in the Editor. If you can’t find a button or remember a hot key, you will always find the command in the menu.',
+            'The <span style="display:inline-block;background-image:url(\'/static/img/pixlland-logo.png\');width:18px;height:18px;background-size:18px 18px;background-position:center;vertical-align:text-bottom;"></span> main menu and toolbar has every command available in the Editor. If you can’t find a button or remember a hot key, you will always find the command in the menu.',
             18,
             40,
             'top'

@@ -62,21 +62,21 @@ export const controls = ({ observer, React, jsx, fragment }) => {
             ctx.clearRect(0, 0, width, height);
             ctx.fillStyle = 'rgba(128, 128, 128, 0.5)';
             ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = '#B1B8BA';
+            ctx.fillStyle = '#d2d6e0';
             ctx.fillRect(halfWidth, 0, 1, height);
             ctx.fillRect(0, halfHeight, width, 1);
-            ctx.fillStyle = '#232e30';
+            ctx.fillStyle = '#12141b';
 
             animPoints.forEach((animNode) => {
                 const posX = (animNode.x + 1) * halfWidth;
                 const posY = (animNode.y * -1 + 1) * halfHeight;
                 const width = 8;
                 const height = 8;
-                ctx.fillStyle = '#ffffff80';
+                ctx.fillStyle = '#f2f5fbfff80';
                 ctx.beginPath();
                 ctx.arc(posX, posY, halfWidth * 0.5 * animNode.weight, 0, 2 * Math.PI);
                 ctx.fill();
-                ctx.fillStyle = '#283538';
+                ctx.fillStyle = '#14151d';
                 ctx.beginPath();
                 ctx.moveTo(posX, posY - height / 2);
                 ctx.lineTo(posX - width / 2, posY);
@@ -86,7 +86,7 @@ export const controls = ({ observer, React, jsx, fragment }) => {
                 ctx.fill();
             });
 
-            ctx.fillStyle = '#F60';
+            ctx.fillStyle = '#2b509b';
             ctx.beginPath();
             ctx.arc(
                 (pos.x + 1) * halfWidth,
@@ -96,7 +96,7 @@ export const controls = ({ observer, React, jsx, fragment }) => {
                 2 * Math.PI
             );
             ctx.fill();
-            ctx.fillStyle = '#283538';
+            ctx.fillStyle = '#14151d';
             ctx.stroke();
         }
 

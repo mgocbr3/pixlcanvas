@@ -1,10 +1,10 @@
 @use 'sass:color';
-@import 'pcui/pcui';
+@import 'pcui/pcui-neutral';
 @import 'common/fonts';
 
 // Variables
-$bcg-primary: #151926;
-$bcg-darkest: #11141b;
+$bcg-primary: #2d2d2d;
+$bcg-darkest: #141414;
 $bcg-darker: color.mix($bcg-primary, $bcg-darkest, 25%);
 $bcg-dark: color.mix($bcg-primary, $bcg-darkest, 75%);
 $border-primary: color.mix($bcg-darkest, $bcg-dark, 50%);
@@ -13,7 +13,7 @@ $bright-yellow: #f1c40f;
 $muted-yellow: #f4a62a;
 $status-error: $bright-red;
 $status-warning: $bright-yellow;
-$status-log: #d2d6e0;
+$status-log: #c0c0c0;
 
 html {
     height: 100%;

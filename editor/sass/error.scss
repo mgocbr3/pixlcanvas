@@ -1,4 +1,4 @@
-@import '../node_modules/@playcanvas/pcui/dist/pcui-theme-green';
+@import '../../pcui/src/scss/pcui-theme-green';
 
 body {
     font-family: 'courier new', monospace;
@@ -67,9 +67,9 @@ button {
     width: 180px;
     height: 32px;
     line-height: 32px;
-    background: #f60;
+    background: #2b509b;
     opacity: 0.9;
-    color: #fff;
+    color: #f2f5fb;
 
     &:hover {
         cursor: pointer;

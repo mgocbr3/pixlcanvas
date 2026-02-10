@@ -29,7 +29,7 @@
 html {
     height: 100%;
     width: 100%;
-    background-color: #1d292c;
+    background-color: #11141b;
 }
 
 body {
@@ -37,7 +37,7 @@ body {
     max-height: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #1d292c;
+    background-color: #11141b;
     font-family: Helvetica, arial, sans-serif;
     position: relative;
     width: 100%;
@@ -205,7 +205,7 @@ body > #dev-tools {
         height: 300px;
         border-right: 1px solid #202020;
         overflow: auto;
-        color: #fff;
+        color: #f2f5fb;
         font-size: 12px;
         font-family: 'Courier New', monospace;
 
@@ -223,7 +223,7 @@ body > #dev-tools {
         }
 
         &::-webkit-scrollbar-thumb:hover {
-            background: #fff;
+            background: #f2f5fb;
         }
 
         &::-webkit-scrollbar-corner {
@@ -262,7 +262,7 @@ body > #dev-tools {
                     border: none;
                     width: calc(100% - 150px);
                     background-color: #202020;
-                    color: #fff;
+                    color: #f2f5fb;
                     font-size: 12px;
                     font-family: 'Courier New', monospace;
                 }
@@ -273,7 +273,7 @@ body > #dev-tools {
                     margin: 0;
                     border: none;
                     background-color: #202020;
-                    color: #fff;
+                    color: #f2f5fb;
                     font-size: 12px;
                     line-height: 16px;
                     font-family: 'Courier New', monospace;
@@ -292,7 +292,7 @@ body > #dev-tools {
                     text-align: center;
                     margin-right: 4px;
                     background-color: #202020;
-                    color: #fff;
+                    color: #f2f5fb;
                     cursor: pointer;
 
                     &:hover {
@@ -309,7 +309,7 @@ body > #dev-tools {
                 height: 24px;
 
                 > .header {
-                    color: color.mix(#202020, #fff, 50%);
+                    color: color.mix(#202020, #f2f5fb, 50%);
                 }
             }
         }
@@ -328,7 +328,7 @@ body > #dev-tools {
             height: 32px;
             line-height: 32px;
             text-align: center;
-            color: #fff;
+            color: #f2f5fb;
             font-size: 16px;
             cursor: pointer;
 

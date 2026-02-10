@@ -77,7 +77,7 @@ $highlight-color: #07f;
         padding: 0;
         text-align: center;
         border: 0;
-        background-color: #364346;
+        background-color: #151926;
 
         &::before {
             display: inline-block;
@@ -87,7 +87,7 @@ $highlight-color: #07f;
         &:hover,
         &:focus {
             box-shadow: none;
-            background-color: #364346;
+            background-color: #151926;
         }
 
         &.pcui-clipboard-button-copy {
@@ -100,7 +100,7 @@ $highlight-color: #07f;
 
         &.pcui-disabled {
             opacity: 1;
-            color: rgba(#b1b8ba, 0.4);
+            color: rgba(#d2d6e0, 0.4);
         }
     }
 }

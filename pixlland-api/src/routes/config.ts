@@ -6,6 +6,15 @@ const getEnv = (key: string, fallback: string) => {
   return process.env[key] || fallback;
 };
 
+const getNumberEnv = (key: string, fallback: number) => {
+  const raw = process.env[key];
+  if (!raw) {
+    return fallback;
+  }
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
+};
+
 export const registerEditorConfigRoutes = (app: FastifyInstance) => {
   app.get('/editor/config.js', async (request, reply) => {
     try {
@@ -62,12 +71,49 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
       const realtimeHttp = getEnv('PIXLLAND_REALTIME_HTTP', 'http://localhost:3001');
       const relayWs = getEnv('PIXLLAND_RELAY_WS', 'ws://localhost:3002');
       const messengerWs = getEnv('PIXLLAND_MESSENGER_WS', 'ws://localhost:3003');
+      const diskAllowance = getNumberEnv('PIXLLAND_DISK_ALLOWANCE_BYTES', 1073741824);
+      const diskUsed = getNumberEnv('PIXLLAND_DISK_USED_BYTES', 0);
 
       const schema = {
         scene: {
           entities: {
             $of: {
               components: {
+                render: {
+                  enabled: { $type: 'boolean', $default: true },
+                  type: { $type: 'string', $default: 'box' },
+                  asset: { $type: 'number', $default: null, $editorType: 'asset' },
+                  rootBone: { $type: 'string', $default: null },
+                  castShadows: { $type: 'boolean', $default: true },
+                  castShadowsLightmap: { $type: 'boolean', $default: true },
+                  receiveShadows: { $type: 'boolean', $default: true },
+                  isStatic: { $type: 'boolean', $default: false },
+                  lightmapped: { $type: 'boolean', $default: false },
+                  lightmapSizeMultiplier: { $type: 'number', $default: 1 },
+                  customAabb: { $type: 'boolean', $default: false },
+                  aabbCenter: { $type: ['number'], $default: [0, 0, 0] },
+                  aabbHalfExtents: { $type: ['number'], $default: [0.5, 0.5, 0.5] },
+                  batchGroupId: { $type: 'number', $default: null },
+                  layers: { $type: ['number'], $default: [0] },
+                  materialAssets: { $type: ['number'], $default: [null], $editorType: 'array:asset' }
+                },
+                model: {
+                  enabled: { $type: 'boolean', $default: true },
+                  type: { $type: 'string', $default: 'box' },
+                  asset: { $type: 'number', $default: null, $editorType: 'asset' },
+                  materialAsset: { $type: 'number', $default: null, $editorType: 'asset' },
+                  castShadows: { $type: 'boolean', $default: true },
+                  castShadowsLightmap: { $type: 'boolean', $default: true },
+                  receiveShadows: { $type: 'boolean', $default: true },
+                  isStatic: { $type: 'boolean', $default: false },
+                  lightmapped: { $type: 'boolean', $default: false },
+                  lightmapSizeMultiplier: { $type: 'number', $default: 1 },
+                  customAabb: { $type: 'boolean', $default: false },
+                  aabbCenter: { $type: ['number'], $default: [0, 0, 0] },
+                  aabbHalfExtents: { $type: ['number'], $default: [0.5, 0.5, 0.5] },
+                  batchGroupId: { $type: 'number', $default: null },
+                  layers: { $type: ['number'], $default: [0] }
+                },
                 script: {
                   enabled: { $type: 'boolean', $default: true },
                   order: { $type: ['string'], $default: [] },
@@ -152,8 +198,8 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           id: projectRow?.owner_id || userId,
           username: 'local-owner',
           plan: { id: 0, type: 'local' },
-          size: 0,
-          diskAllowance: 0
+          size: diskUsed,
+          diskAllowance
         },
         aws: {
           s3Prefix: ''

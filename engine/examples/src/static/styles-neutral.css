@@ -10,7 +10,7 @@ html, body, #app {
 body {
     margin: 0;
     overflow: hidden;
-    background-color: #0d0e10;
+    background-color: #141414;
 }
 
 #app {
@@ -51,7 +51,7 @@ body {
 }
 
 #sideBar {
-    background-color: #151926;
+    background-color: #2d2d2d;
     min-width: 280px;
     max-width: 280px;
     margin: 8px;
@@ -211,7 +211,7 @@ body {
 
 #sideBar .categoryPanel {
     margin: 0 8px 8px 8px !important;
-    border: 1px solid #151926;
+    border: 1px solid #2d2d2d;
     border-radius: 4px;
 }
 
@@ -225,14 +225,14 @@ body {
 
 /* Category panel header styling */
 #sideBar .categoryPanel > .pcui-panel-header {
-    background-color: #0d0e10;
+    background-color: #141414;
 }
 
 .nav-item {
     margin: 12px;
     overflow: auto;
     border-radius: 4px;
-    background-color: #14151d;
+    background-color: #242424;
     position: relative;
 }
 
@@ -241,14 +241,14 @@ body {
 }
 
 .nav-item.selected {
-    background-color: #11141b;
+    background-color: #1b1b1b;
 }
 #sideBar .nav-item.selected .nav-item-text {
-    color: #2b509b !important;
+    color: #a0a0a0 !important;
 }
 
 .nav-item:hover {
-    background-color: #11141b;
+    background-color: #1b1b1b;
 }
 
 .nav-item-text {
@@ -396,7 +396,7 @@ body {
 }
 
 #controlPanel > .pcui-panel-content > .pcui-panel:first-child {
-    border-top: 1px solid #11141b;
+    border-top: 1px solid #1b1b1b;
 }
 
 #controlPanel .pcui-label-group > .pcui-label {
@@ -409,7 +409,7 @@ body {
 }
 
 #controlPanel > .pcui-panel-content {
-    background-color: #151926;
+    background-color: #2d2d2d;
 }
 
 #descriptionPanel {
@@ -418,7 +418,7 @@ body {
     left: 50%;
     bottom: 8px;
     transform: translateX(-50%);
-    color: #d2d6e0;
+    color: #c0c0c0;
     width: 50%;
 }
 
@@ -428,7 +428,7 @@ body {
 }
 
 #descriptionPanel a {
-    color: #d2d6e0;
+    color: #c0c0c0;
 }
 
 @media only screen and (max-width: 600px) {
@@ -482,10 +482,10 @@ body {
     height: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #11141b;
+    background: #1b1b1b;
 }
 ::-webkit-scrollbar-thumb {
-    background: #151926;
+    background: #2d2d2d;
 }
 
 .panel-toggle {
@@ -506,7 +506,7 @@ body {
     font-size: 14px;
     margin-right: 10px;
     text-align: center;
-    color: #2b509b;
+    color: #a0a0a0;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -666,7 +666,7 @@ body {
 
 #menu #showMiniStatsButton.selected {
     color: white;
-    background-color: #2b509b;
+    background-color: #a0a0a0;
 }
 
 .tabs-wrapper {
@@ -701,8 +701,8 @@ body {
 }
 
 .code-editor-menu-container > .pcui-button {
-    color: #f2f5fb;
-    background-color: #14151d;
+    color: #e6e6e6;
+    background-color: #242424;
     margin-right: 4px;
 }
 
@@ -711,8 +711,8 @@ body {
 }
 
 .tabs-container > .pcui-button.selected {
-    color: #f2f5fb;
-    background-color: #14151d;
+    color: #e6e6e6;
+    background-color: #242424;
 }
 
 .tabs-container > .pcui-button:focus {
@@ -721,7 +721,7 @@ body {
 }
 
 #embed-button.selected {
-    background-color: #2b509b;
+    background-color: #a0a0a0;
     color: white;
 }
 
@@ -764,7 +764,7 @@ body {
 }
 
 #appInner.fullscreen #fullscreen-button {
-    background-color: #2b509b;
+    background-color: #a0a0a0;
     color: white;
 }
 
@@ -773,7 +773,7 @@ body {
     padding: 8px 16px;
     left: 20px;
     bottom: 20px;
-    color: #d2d6e0;
+    color: #c0c0c0;
     background-color: rgba(0, 0, 0, .5);
     font-family: "Proxima Nova", Arial, sans-serif;
 }

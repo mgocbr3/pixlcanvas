@@ -2,7 +2,7 @@ editor.once('load', () => {
     const TIMEOUT = 5000;
     const TIMEOUT_OVERLAP = 500;
     let last;
-    const logo = 'https://playcanvas.com/static-assets/platform/images/logo/playcanvas-logo-360.jpg';
+    const logo = '/static/img/pixlland-logo.png';
 
     editor.method('notify:state', () => {
         if (!window.Notification) {

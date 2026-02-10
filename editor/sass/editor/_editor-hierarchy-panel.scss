@@ -21,9 +21,9 @@
         }
 
         >.advanced-search-filter-container {
-            border-bottom: 1px solid #20292b;
-            border-top: 1px solid #20292b;
-            background-color: #20292b;
+            border-bottom: 1px solid #11141b;
+            border-top: 1px solid #11141b;
+            background-color: #11141b;
             padding-bottom: 7px;
 
             >.advanced-search-label-toggle {
@@ -37,7 +37,7 @@
                     opacity: 0;
                     width: 140px;
                     background-color: $bcg-primary;
-                    color: #fff;
+                    color: #f2f5fb;
                     text-align: center;
                     border-radius: 5px;
                     padding: 5px 0;
@@ -54,7 +54,7 @@
                 }
 
                 >.advanced-search-label-toggle-text {
-                    color: #fff;
+                    color: #f2f5fb;
                     font-style: normal;
                     font-weight: 700;
                     font-size: 12px;
@@ -73,7 +73,7 @@
                 cursor: pointer;
 
                 >.advanced-search-label-filter-text {
-                    color: #fff;
+                    color: #f2f5fb;
                     font-style: normal;
                     font-weight: 400;
                     font-size: 12px;
@@ -87,7 +87,7 @@
                     box-shadow: none;
 
                     &.checked {
-                        background-color: #fff;
+                        background-color: #f2f5fb;
                     }
                 }
             }
@@ -96,7 +96,7 @@
                 height: 30px;
 
                 .advanced-search-search-by-text {
-                    color: #fff;
+                    color: #f2f5fb;
                     font-style: normal;
                     font-weight: 700;
                     font-size: 12px;
@@ -130,17 +130,17 @@
             display: flex;
             flex-direction: row;
             min-height: 30px;
-            background-color: #293538;
-            border-top: 1px solid #364346;
+            background-color: #14151d;
+            border-top: 1px solid #151926;
 
             &:hover {
-                background-color: #20292b;
-                border-top: 1px solid #293538;
+                background-color: #11141b;
+                border-top: 1px solid #14151d;
             }
 
             &.activated {
-                background-color: #20292b;
-                border-top: 1px solid #293538;
+                background-color: #11141b;
+                border-top: 1px solid #14151d;
             }
 
             >.pcui-input-element.search {
@@ -184,7 +184,7 @@
                     font-size: 14px;
                     line-height: 14px;
                     padding: 8px 0;
-                    color: #9ba1a3;
+                    color: #d2d6e0;
                 }
 
                 &.not-empty::before {
@@ -213,7 +213,7 @@
                     right: 17px;
                     width: 8px;
                     height: 8px;
-                    color: #fff;
+                    color: #f2f5fb;
 
                     @extend .font-icon;
 
@@ -233,7 +233,7 @@
 
                 font-size: 18px;
                 cursor: pointer;
-                color: #b1b8ba;
+                color: #d2d6e0;
 
                 &.active,
                 &:hover,

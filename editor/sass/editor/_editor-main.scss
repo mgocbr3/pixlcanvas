@@ -13,7 +13,7 @@ body {
     overflow: hidden;
     margin: 0;
     font-size: 14px;
-    color: #eee;
+    color: #d2d6e0;
 }
 
 strong {
@@ -986,7 +986,7 @@ strong {
                     width: 22px;
                     height: 22px;
                     line-height: 20px;
-                    background-color: #364346;
+                    background-color: #151926;
                     cursor: pointer;
 
                     @extend .font-icon;
@@ -996,7 +996,7 @@ strong {
 
                     &:hover {
                         color: #d34141;
-                        background-color: #20292b;
+                        background-color: #11141b;
                     }
 
                     &::after {
@@ -1098,7 +1098,7 @@ strong {
 
                     &:hover {
                         color: #d34141;
-                        background-color: #20292b;
+                        background-color: #11141b;
                     }
 
                     &::after {
@@ -1459,7 +1459,7 @@ strong {
                                     text-align: center;
 
                                     &:hover {
-                                        background-color: #20292b;
+                                        background-color: #11141b;
                                     }
 
                                     &.error {
@@ -1484,7 +1484,7 @@ strong {
 
                                     &:hover {
                                         color: #d34141;
-                                        background-color: #20292b;
+                                        background-color: #11141b;
                                     }
 
                                     &::after {
@@ -1554,7 +1554,7 @@ strong {
 
                     &:hover {
                         color: $text-active;
-                        background-color: #20292b;
+                        background-color: #11141b;
                     }
 
                     &.disabled:hover {
@@ -2104,7 +2104,7 @@ strong {
 
                     &:hover {
                         color: $text-active;
-                        background-color: #20292b;
+                        background-color: #11141b;
                     }
                 }
 
@@ -2376,7 +2376,7 @@ strong {
     z-index: 4;
     margin-top: -1px;
     margin-left: -1px;
-    border: 4px solid #f60;
+    border: 4px solid #2b509b;
     pointer-events: none;
 
     &.active {
@@ -2653,7 +2653,7 @@ strong {
             background-color: rgba($bcg-darker, 0.75);
 
             .pcui-boolean-input:not(.pcui-boolean-input-ticked) {
-                background-color: #20292b;
+                background-color: #11141b;
             }
 
             .pcui-label {
@@ -3019,14 +3019,14 @@ strong {
         padding: 0 10px;
         font-size: 12px;
         margin: 0 2px 0 0;
-        color: rgba(#fff, 0.75);
-        background-color: rgb(41 53 56 / 50%);
+        color: rgba($text-primary, 0.75);
+        background-color: rgba($bcg-darker, 0.5);
         cursor: pointer;
 
         &:hover,
         &.active {
-            background-color: rgb(41 53 56 / 75%);
-            color: #fff;
+            background-color: rgba($bcg-darker, 0.75);
+            color: $text-primary;
         }
 
         &::before {
@@ -3121,7 +3121,7 @@ strong {
 
         &:hover {
             color: $text-active;
-            background-color: #20292b;
+            background-color: #11141b;
         }
     }
 
@@ -3264,7 +3264,7 @@ strong {
     .pcui-overlay-content {
         width: 536px;
         height: auto;
-        background-color: #fff;
+        background-color: #f2f5fb;
         z-index: 1;
 
         > .pcui-container {
@@ -3312,7 +3312,7 @@ strong {
                 height: 40px;
                 line-height: 40px;
                 text-align: center;
-                color: #fff;
+                color: #f2f5fb;
                 margin: 0 0 28px 28px;
                 border-radius: 0;
                 box-shadow: none;
@@ -3366,7 +3366,7 @@ strong {
     height: 0;
     position: absolute;
     border: 16px solid transparent;
-    border-#{$border-color-side}-color: #fff;
+    border-#{$border-color-side}-color: #f2f5fb;
 }
 
 .pcui-overlay.bubble {
@@ -3452,7 +3452,7 @@ strong {
         position: absolute;
         width: 480px;
         height: auto;
-        background-color: #fff;
+        background-color: #f2f5fb;
         transition: none;
 
         > .pcui-panel {
@@ -3518,7 +3518,7 @@ strong {
             border: none;
 
             &:hover {
-                color: #fff;
+                color: #f2f5fb;
                 background-color: $text-active;
                 box-shadow: none;
             }
@@ -3649,7 +3649,7 @@ strong {
                 height: 12px;
                 margin: -7px 0 0 -7px;
                 border: 1px solid #000;
-                outline: 1px solid #fff;
+                outline: 1px solid #f2f5fb;
             }
         }
 
@@ -3686,7 +3686,7 @@ strong {
                 height: 4px;
                 margin: -3px 0 0;
                 border: 1px solid #000;
-                outline: 1px solid #fff;
+                outline: 1px solid #f2f5fb;
             }
         }
 
@@ -3702,7 +3702,7 @@ strong {
             border: 1px solid #000;
             cursor: crosshair;
             background: #000;
-            background: linear-gradient(to bottom, #fff 0%, #000 100%);
+            background: linear-gradient(to bottom, #f2f5fb 0%, #000 100%);
 
             > .handle {
                 position: absolute;
@@ -3712,7 +3712,7 @@ strong {
                 height: 4px;
                 margin: -3px 0 0;
                 border: 1px solid #000;
-                outline: 1px solid #fff;
+                outline: 1px solid #f2f5fb;
             }
         }
 
@@ -3857,7 +3857,7 @@ strong {
                         width: 14px;
                         height: 14px;
                         border: 1px solid #000;
-                        outline: 1px solid #fff;
+                        outline: 1px solid #f2f5fb;
                         pointer-events: none;
                     }
 
@@ -3875,7 +3875,7 @@ strong {
                         width: 20px;
                         height: 4px;
                         border: 1px solid rgb(92 82 79);
-                        outline: 1px solid #fff;
+                        outline: 1px solid #f2f5fb;
                         pointer-events: none;
                     }
 
@@ -4016,7 +4016,7 @@ strong {
                     left: 5px;
                     margin: 0;
                     opacity: 1;
-                    background: linear-gradient(360deg, #f06531 -4.69%, #ffa468 125.79%), linear-gradient(0.36deg, #ff0 -151.33%, rgb(63 63 63 / 0%) 133.42%);
+                    background: linear-gradient(360deg, #f06531 -4.69%, #3c4a77 125.79%), linear-gradient(0.36deg, #ff0 -151.33%, rgb(63 63 63 / 0%) 133.42%);
                     box-shadow: inset 0 0 6px rgb(255 252 0 / 50%);
                     height: 100%;
                     border-radius: initial;
@@ -4051,7 +4051,7 @@ strong {
                         padding: 0 20px;
                         background-color: $text-active;
                         border: none;
-                        color: #fff;
+                        color: #f2f5fb;
                         font-weight: 800;
                         margin-left: 0;
 
@@ -4411,7 +4411,7 @@ strong {
                                 display: block;
                                 height: 100%;
                                 opacity: 0;
-                                background: linear-gradient(89.93deg, rgba(#f60, 0.5) 0.5%, rgb(255 255 255 / 20%) 75.94%, transparent 94%);
+                                background: linear-gradient(89.93deg, rgba(#2b509b, 0.5) 0.5%, rgb(255 255 255 / 20%) 75.94%, transparent 94%);
                                 transition: opacity 0.45s ease-in-out;
                                 transition: width 0.3s ease-in-out;
                             }
@@ -4545,7 +4545,7 @@ strong {
                                     left: 50%;
                                     top: 50%;
                                     transform: translate(-50%, -50%);
-                                    background: linear-gradient(186.19deg, #f60 4.89%, #ffa468 61.73%);
+                                    background: linear-gradient(186.19deg, #2b509b 4.89%, #3c4a77 61.73%);
                                     border-radius: 50%;
                                     padding: 0;
                                     margin: 0;
@@ -4764,7 +4764,7 @@ strong {
                                     border-radius: 50%;
                                     color: $text-primary;
                                     box-shadow: inset 0 0 6px rgb(255 252 0 / 50%);
-                                    background-image: linear-gradient(360deg, #f06531 -4.69%, #ffa468 125.79%), linear-gradient(0.36deg, #ff0 -151.33%, rgb(63 63 63 / 0%) 133.42%);
+                                    background-image: linear-gradient(360deg, #f06531 -4.69%, #3c4a77 125.79%), linear-gradient(0.36deg, #ff0 -151.33%, rgb(63 63 63 / 0%) 133.42%);
                                     z-index: 1;
 
                                     &:hover {
@@ -5568,7 +5568,7 @@ strong {
                     top: 0;
                     width: 35px;
                     height: 100%;
-                    background-image: linear-gradient(360deg, #f06531 -4.69%, #ffa468 125.79%), linear-gradient(0.36deg, #ff0 -151.33%, rgb(63 63 63 / 0%) 133.42%);
+                    background-image: linear-gradient(360deg, #f06531 -4.69%, #3c4a77 125.79%), linear-gradient(0.36deg, #ff0 -151.33%, rgb(63 63 63 / 0%) 133.42%);
 
                     &::after {
                         @extend .font-icon;
@@ -5861,7 +5861,7 @@ strong {
                             height: 16px;
                             right: 15px;
                             z-index: 102;
-                            background: url('/static/platform/images/common/HOME_CHEVRON.png') #fff;
+                            background: url('/static/platform/images/common/HOME_CHEVRON.png') #f2f5fb;
                             background-repeat: no-repeat;
                             background-size: 16px 16px;
                         }
@@ -5893,7 +5893,7 @@ strong {
                             overflow-y: auto;
 
                             li {
-                                background-color: #fff;
+                                background-color: #f2f5fb;
                                 border: 1px solid transparent;
                                 line-height: 45px;
                                 padding: 0 5px;
@@ -5912,7 +5912,7 @@ strong {
 
                 > .fields {
                     padding: 16px;
-                    background-color: #fff;
+                    background-color: #f2f5fb;
 
                     > .switch {
                         display: block;
@@ -5935,13 +5935,13 @@ strong {
                     height: 40px;
                     background-color: #f16524;
                     border: none;
-                    color: #fff;
+                    color: #f2f5fb;
                     font-size: 1.15em;
                     width: 80%;
 
                     &:hover {
                         color: #f16524;
-                        background-color: #fff;
+                        background-color: #f2f5fb;
                     }
                 }
 
@@ -5960,7 +5960,7 @@ strong {
             cursor: pointer;
 
             h4 {
-                color: #fff;
+                color: #f2f5fb;
                 text-align: center;
                 font-size: medium;
                 margin-bottom: 5px;
@@ -6040,9 +6040,9 @@ strong {
                         bottom: 0;
                         margin: 10px;
                         border-radius: 50%;
-                        color: #fff;
+                        color: #f2f5fb;
                         border: none;
-                        background-image: linear-gradient(360deg, #f06531 -4.69%, #ffa468 125.79%), linear-gradient(0.36deg, #ff0 -151.33%, rgb(63 63 63 / 0%) 133.42%);
+                        background-image: linear-gradient(360deg, #f06531 -4.69%, #3c4a77 125.79%), linear-gradient(0.36deg, #ff0 -151.33%, rgb(63 63 63 / 0%) 133.42%);
                         box-shadow: 0 0 10px rgba($text-darkest, 0.8);
 
                         &::before { height: 50%; }
@@ -6227,7 +6227,7 @@ strong {
 
                 &::before {
                     content: '\E218';
-                    color: #fff;
+                    color: #f2f5fb;
                     font-size: medium;
                     margin-right: 20px;
                 }
@@ -6235,7 +6235,7 @@ strong {
 
             span {
                 font-size: 14px;
-                color: #fff;
+                color: #f2f5fb;
                 text-transform: uppercase;
             }
         }
@@ -6245,7 +6245,7 @@ strong {
             position: absolute;
             right: 70px;
             color: #e74c3c;
-            background-color: #fff !important;
+            background-color: #f2f5fb !important;
             border: none !important;
             padding: 0 50px;
 
@@ -6264,7 +6264,7 @@ strong {
             font-size: large;
             background: none !important;
             border: none;
-            color: #fff;
+            color: #f2f5fb;
             box-shadow: none;
             cursor: pointer;
 
@@ -7618,14 +7618,14 @@ strong {
 
                                 &.highlighted {
                                     color: $text-primary;
-                                    background: color.adjust(#f60, $lightness: -7%);
+                                    background: color.adjust(#2b509b, $lightness: -7%);
 
                                     &:hover {
                                         background: color.adjust($text-active, $lightness: -10%);
                                     }
 
                                     &:active {
-                                        background: color.adjust(#f60, $lightness: -12%);
+                                        background: color.adjust(#2b509b, $lightness: -12%);
                                     }
                                 }
                             }

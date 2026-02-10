@@ -8,6 +8,7 @@ import '@/common/pcui/pcui';
 import './editor';
 import './permissions/permissions';
 import './storage/localstorage';
+import '@/common/theme';
 import './storage/clipboard';
 import './users/users-flags';
 import './hotkey/hotkey';

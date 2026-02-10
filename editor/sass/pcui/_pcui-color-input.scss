@@ -19,7 +19,7 @@
     }
 
     // checkerboard pattern
-    @include checkerboard(#fff, black, calc(44px / 5));
+    @include checkerboard(#f2f5fb, black, calc(44px / 5));
 
     &::after {
         content: '\00a0';

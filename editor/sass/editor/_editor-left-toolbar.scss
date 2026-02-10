@@ -18,13 +18,13 @@
         }
 
         &.logo {
-            background-image: url('https://playcanvas.com/static-assets/images/editor_logo.png');
-            background-size: 92px 46px;
+            background-image: url('/static/img/pixlland-logo.png');
+            background-size: 30px 30px;
             background-repeat: no-repeat;
-            background-position: -1px -1px;
+            background-position: center;
 
             &:hover {
-                background-position: -47px -1px;
+                background-position: center;
             }
         }
 

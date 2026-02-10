@@ -3,6 +3,7 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
+import multipart from '@fastify/multipart';
 
 import { registerHealthRoutes } from './routes/health.js';
 import { registerProjectRoutes } from './routes/projects.js';
@@ -16,10 +17,17 @@ const app = Fastify({ logger: true });
 const port = Number(process.env.PORT || 8787);
 const corsOrigin = process.env.CORS_ORIGIN || '*';
 const jwtSecret = process.env.SUPABASE_JWT_SECRET || '';
+const uploadMaxBytes = Number(process.env.UPLOAD_MAX_BYTES || 524288000);
 
 await app.register(cors, {
   origin: corsOrigin,
   credentials: true
+});
+
+await app.register(multipart, {
+  limits: {
+    fileSize: uploadMaxBytes
+  }
 });
 
 if (!jwtSecret) {

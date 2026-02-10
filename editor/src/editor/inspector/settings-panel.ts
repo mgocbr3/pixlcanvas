@@ -19,6 +19,7 @@ import { PhysicsSettingsPanel } from './settings-panels/physics';
 import { RenderingSettingsPanel } from './settings-panels/rendering';
 import { ScriptsSettingsPanel } from './settings-panels/scripts';
 import { ProjectHistorySettingsPanel } from './settings-panels/settings-history';
+import { ThemesSettingsPanel } from './settings-panels/themes';
 
 
 const CLASS_ROOT = 'settings';
@@ -26,6 +27,7 @@ const CLASS_ROOT = 'settings';
 const SETTINGS_PANELS = [
     EngineSettingsPanel,
     EditorSettingsPanel,
+    ThemesSettingsPanel,
     AssetImportSettingsPanel,
     PhysicsSettingsPanel,
     RenderingSettingsPanel,

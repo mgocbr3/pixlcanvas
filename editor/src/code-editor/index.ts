@@ -20,6 +20,7 @@ import './permissions/permissions';
 
 // local storage (from main editor)
 import '../editor/storage/localstorage';
+import '@/common/theme';
 
 // errors
 import './errors/errors-realtime';

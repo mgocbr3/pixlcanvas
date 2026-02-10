@@ -3,7 +3,7 @@ import { Component } from 'react';
 
 import { jsx } from '../../jsx.mjs';
 import * as languages from '../../monaco/languages/index.mjs';
-import { playcanvasTheme } from '../../monaco/theme.mjs';
+import { getExamplesTheme } from '../../monaco/theme.mjs';
 import { jsRules } from '../../monaco/tokenizer-rules.mjs';
 import { pcTypes } from '../../paths.mjs';
 
@@ -128,7 +128,8 @@ class CodeEditorBase extends TypedComponent {
         const monaco = window.monaco;
 
         // set theme
-        monaco.editor.defineTheme('playcanvas', playcanvasTheme);
+        const theme = getExamplesTheme();
+        monaco.editor.defineTheme('playcanvas', theme);
         monaco.editor.setTheme('playcanvas');
     }
 
