@@ -3,6 +3,10 @@ import type { Database } from './database.types.js';
 
 let cachedClient: SupabaseClient<Database> | null = null;
 
+export const isSupabaseConfigured = () => {
+  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+};
+
 export const getSupabaseClient = () => {
   if (cachedClient) {
     return cachedClient;

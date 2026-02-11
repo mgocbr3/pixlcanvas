@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { authenticate, getUserId } from '../lib/auth.js';
-import { getSupabaseClient } from '../lib/supabase.js';
+import { getSupabaseClient, isSupabaseConfigured } from '../lib/supabase.js';
 
 const EMPTY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=',
@@ -19,9 +19,12 @@ const normalizeUser = (id: string, profile?: { username?: string | null; full_na
 
 export const registerUserRoutes = (app: FastifyInstance) => {
   app.get('/users/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    if (!isSupabaseConfigured()) {
+      return normalizeUser(id);
+    }
     try {
       const client = getSupabaseClient();
-      const { id } = request.params as { id: string };
       const { data } = await client
         .from('users_profile')
         .select('id, username, full_name, avatar_url')

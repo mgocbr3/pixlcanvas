@@ -8,6 +8,29 @@ const REALTIME_PORT = 3001;
 const RELAY_PORT = 3002;
 const MESSENGER_PORT = 3003;
 
+const DEFAULT_PROJECT_SETTINGS = {
+  engineV2: true,
+  useLegacyScripts: false,
+  scripts: [],
+  loadingScreenScript: null,
+  editor: {
+    gridDivisions: 32,
+    gridDivisionSize: 1,
+    snapIncrement: 1,
+    gizmoSize: 1,
+    gizmoPreset: 'default',
+    cameraGrabDepth: false,
+    cameraGrabColor: false,
+    cameraNearClip: 0.1,
+    cameraFarClip: 1000,
+    cameraClearColor: [0.2, 0.2, 0.2, 1],
+    cameraToneMapping: 0,
+    cameraGammaCorrection: 1,
+    showFog: true,
+    iconSize: 1
+  }
+};
+
 const DEFAULT_SCENE_SETTINGS = {
   physics: {
     gravity: [0, -9.8, 0]
@@ -22,7 +45,6 @@ const DEFAULT_SCENE_SETTINGS = {
     gamma_correction: 1,  // GAMMA_SRGB para cores corretas
     tonemapping: 0,  // TONEMAP_LINEAR
     exposure: 1.2,  // Aumentado levemente para objetos mais visíveis
-    skybox: null,
     skyboxIntensity: 1,
     skyboxRotation: [0, 0, 0],
     skyboxMip: 0,
@@ -55,7 +77,7 @@ const DEFAULT_SCENE_ENTITIES = {
       camera: {
         fov: 45,
         projection: 0,
-        clearColor: [0.118, 0.118, 0.118, 1],
+        clearColor: [0.22, 0.34, 0.52, 1],
         clearColorBuffer: true,
         clearDepthBuffer: true,
         frustumCulling: true,
@@ -391,6 +413,7 @@ const createRealtimeServer = async (port) => {
       }
 
       if (msg && (msg.a === 's' || msg.a === 'f') && msg.c && msg.d) {
+        console.log(`[realtime] on-demand doc request: collection=${msg.c} id=${msg.d} action=${msg.a}`);
         if (msg.c === 'scenes') {
           await ensureSceneDoc(backend.connect(), {
             id: msg.d,
@@ -417,6 +440,14 @@ const createRealtimeServer = async (port) => {
             source: true,
             source_asset_id: null
           });
+        }
+        if (msg.c === 'settings') {
+          console.log(`[realtime] on-demand settings doc request for id=${msg.d}`);
+          await ensureDoc(backend.connect(), 'settings', msg.d, DEFAULT_PROJECT_SETTINGS);
+        }
+        if (msg.c === 'user_data') {
+          console.log(`[realtime] on-demand user_data doc request for id=${msg.d}`);
+          await ensureDoc(backend.connect(), 'user_data', msg.d, {});
         }
       }
 

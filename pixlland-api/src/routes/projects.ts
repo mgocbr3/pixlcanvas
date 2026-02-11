@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { authenticate, getUserId } from '../lib/auth.js';
 import type { Database } from '../lib/database.types.js';
-import { getSupabaseClient } from '../lib/supabase.js';
+import { getSupabaseClient, isSupabaseConfigured } from '../lib/supabase.js';
 
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
 type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
@@ -113,6 +113,9 @@ export const registerProjectRoutes = (app: FastifyInstance) => {
   });
 
   app.get('/projects/:projectId/assets', async (request, reply) => {
+    if (!isSupabaseConfigured()) {
+      return [];
+    }
     try {
       const client = getSupabaseClient();
       const { projectId } = request.params as { projectId: string };
@@ -180,6 +183,9 @@ export const registerProjectRoutes = (app: FastifyInstance) => {
   });
 
   app.get('/projects/:projectId/scenes', async (request, reply) => {
+    if (!isSupabaseConfigured()) {
+      return { result: [{ id: 1, uniqueId: 'default', name: 'Main Scene', createdAt: new Date().toISOString() }] };
+    }
     try {
       const client = getSupabaseClient();
       const { projectId } = request.params as { projectId: string };

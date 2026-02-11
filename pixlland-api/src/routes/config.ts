@@ -20,7 +20,6 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
     try {
       const userId = getUserId(request) || 'anonymous';
 
-      const client = getSupabaseClient();
       const { sceneId, projectId, branchId } = request.query as {
         sceneId?: string;
         projectId?: string;
@@ -32,34 +31,38 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
       let resolvedProjectId: number | null = projectId ? Number(projectId) : null;
       let resolvedBranchId: string | null = branchId || null;
 
-      if (sceneId) {
+      // Only query Supabase if it's configured
+      let client: any = null;
+      try {
+        client = getSupabaseClient();
+      } catch {
+        // Supabase not configured — use local defaults
+      }
+
+      if (client && sceneId) {
         const { data, error } = await client
           .from('scenes')
           .select('*')
           .eq('id', Number(sceneId))
           .single();
 
-        if (error) {
-          return reply.code(404).send('/* scene_not_found */');
+        if (!error && data) {
+          sceneRow = data;
+          resolvedProjectId = data.project_id;
+          resolvedBranchId = data.branch_id;
         }
-
-        sceneRow = data;
-        resolvedProjectId = data.project_id;
-        resolvedBranchId = data.branch_id;
       }
 
-      if (resolvedProjectId) {
+      if (client && resolvedProjectId) {
         const { data, error } = await client
           .from('projects')
           .select('*')
           .eq('id', resolvedProjectId)
           .single();
 
-        if (error) {
-          return reply.code(404).send('/* project_not_found */');
+        if (!error && data) {
+          projectRow = data;
         }
-
-        projectRow = data;
       }
 
       // O editor sempre roda no proxy (3487), então API calls devem usar /api (relativo)
@@ -255,7 +258,7 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           }
         },
         project: {
-          id: projectRow?.id || resolvedProjectId || 0,
+          id: projectRow?.id || resolvedProjectId || 1,
           name: projectRow?.name || 'Untitled Project',
           description: projectRow?.description || '',
           private: projectRow?.private ?? true,
@@ -263,10 +266,11 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           hasPrivateSettings: false,
           thumbnails: {},
           masterBranch: resolvedBranchId || 'main',
-          settings: projectRow?.settings || {
+          settings: Object.assign({
+            id: 'project_settings_1',
             engineV2: true,
             useLegacyScripts: false
-          },
+          }, projectRow?.settings || {}),
           permissions: {
             read: [userId],
             write: [userId],
@@ -274,9 +278,9 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           }
         },
         scene: {
-          id: sceneRow?.id || null,
-          uniqueId: sceneRow?.unique_id || null,
-          name: sceneRow?.name || null
+          id: sceneRow?.id || 1,
+          uniqueId: sceneRow?.unique_id || 'default',
+          name: sceneRow?.name || 'Main Scene'
         },
         engineVersions: {
           current: { version: 'local', description: 'Local' },

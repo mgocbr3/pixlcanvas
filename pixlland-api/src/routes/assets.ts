@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { authenticate, getUserId } from '../lib/auth.js';
-import { getSupabaseClient } from '../lib/supabase.js';
+import { getSupabaseClient, isSupabaseConfigured } from '../lib/supabase.js';
 import { broadcastMessenger } from '../lib/messenger-client.js';
 
 type AssetFile = {

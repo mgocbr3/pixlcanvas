@@ -10,8 +10,13 @@ const connect = () => {
     ws = new WebSocket(MESSENGER_URL);
 
     ws.on('open', () => {
-      // Authenticate as server
-      ws?.send(JSON.stringify({ name: 'authenticate', accessToken: 'server' }));
+      try {
+        if (ws?.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ name: 'authenticate', accessToken: 'server' }));
+        }
+      } catch {
+        // ignore send errors during connection
+      }
     });
 
     ws.on('close', () => {
@@ -20,6 +25,7 @@ const connect = () => {
     });
 
     ws.on('error', () => {
+      try { ws?.close(); } catch { /* ignore */ }
       ws = null;
       if (!connectTimer) {
         connectTimer = setTimeout(connect, 3000);

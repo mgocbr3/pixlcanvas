@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.EDITOR_PORT || 3487);
-const API_URL = process.env.PIXLLAND_API_URL || 'http://localhost:8788';
+const API_URL = process.env.PIXLLAND_API_URL || 'http://localhost:8787';
 const editorDist = path.resolve(__dirname, '../../editor/dist');
 
 const app = Fastify({ logger: true });
@@ -27,6 +27,23 @@ await app.register(fastifyHttpProxy, {
       }
       return headers;
     }
+  }
+});
+
+// Proxy only /editor/config.js to the API backend (the only dynamic /editor endpoint)
+// Static files under /editor/* are served by fastifyStatic below.
+app.get('/editor/config.js', async (request, reply) => {
+  const url = new URL(request.url, `http://${request.headers.host}`);
+  const targetUrl = `${API_URL}/editor/config.js${url.search}`;
+  try {
+    const headers = {};
+    if (request.headers.authorization) {
+      headers.authorization = request.headers.authorization;
+    }
+    const resp = await fetch(targetUrl, { headers });
+    reply.code(resp.status).type(resp.headers.get('content-type') || 'application/javascript').send(await resp.text());
+  } catch (err) {
+    reply.code(502).send('/* proxy error */');
   }
 });
 

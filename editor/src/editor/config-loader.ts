@@ -35,7 +35,7 @@ const showError = (message: string) => {
   const apiUrl =
     getParam(params, ['api', 'apiUrl']) ||
     getParam(hashParams, ['api', 'apiUrl']) ||
-    'http://localhost:8788';
+    window.location.origin;
   const sceneId =
     getParam(params, ['sceneId', 'scene_id']) ||
     getParam(hashParams, ['sceneId', 'scene_id']);
