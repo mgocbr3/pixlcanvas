@@ -54,3 +54,49 @@
     // show scrollbars automatically
     overflow: auto;
 }
+
+$icon-blue: #4da3ff;
+$icon-green: #3ddc84;
+$icon-yellow: #f2c94c;
+$icon-orange: #f2994a;
+$icon-purple: #b58bff;
+$icon-cyan: #4fd1c5;
+$icon-red: #ff6b6b;
+$icon-gray: #9aa4b2;
+
+$action-icon-colors: (
+    'E111': $icon-cyan,
+    'E112': $icon-cyan,
+    'E113': $icon-cyan,
+    'E114': $icon-cyan,
+    'E116': $icon-cyan,
+    'E118': $icon-cyan,
+    'E120': $icon-blue,
+    'E124': $icon-red,
+    'E126': $icon-purple,
+    'E132': $icon-green,
+    'E133': $icon-blue,
+    'E143': $icon-blue,
+    'E145': $icon-blue,
+    'E146': $icon-blue,
+    'E217': $icon-yellow,
+    'E222': $icon-orange,
+    'E228': $icon-orange,
+    'E235': $icon-gray,
+    'E244': $icon-blue,
+    'E287': $icon-cyan,
+    'E288': $icon-cyan,
+    'E289': $icon-cyan,
+    'E340': $icon-blue,
+    'E357': $icon-blue,
+    'E399': $icon-purple
+);
+
+@each $code, $color in $action-icon-colors {
+    .pcui-button[data-icon-code='#{$code}']::before,
+    .pcui-menu-item-content > .pcui-label[data-icon-code='#{$code}']::before,
+    .pcui-treeview-item-icon[data-icon-code='#{$code}']::after,
+    .pcui-infobox[data-icon-code='#{$code}']::before {
+        color: $color;
+    }
+}

@@ -309,6 +309,10 @@ class I18n extends EventHandler {
      * });
      */
     addData(data) {
+        if (!this._parser) {
+            return;
+        }
+
         let parsed;
         try {
             parsed = this._parser.parse(data);
@@ -345,6 +349,10 @@ class I18n extends EventHandler {
      * as {@link I18n#addData}.
      */
     removeData(data) {
+        if (!this._parser) {
+            return;
+        }
+
         let parsed;
         try {
             parsed = this._parser.parse(data);

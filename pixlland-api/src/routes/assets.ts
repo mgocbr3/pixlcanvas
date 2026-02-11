@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { authenticate, getUserId } from '../lib/auth.js';
 import { getSupabaseClient } from '../lib/supabase.js';
+import { broadcastMessenger } from '../lib/messenger-client.js';
 
 type AssetFile = {
   filename: string;
@@ -21,6 +22,56 @@ const safeJsonParse = (value: string | undefined | null) => {
   } catch {
     return null;
   }
+};
+
+const normalizePath = (value: unknown) => {
+  return Array.isArray(value) ? value : [];
+};
+
+const getAssetPath = (asset: { path?: unknown; data?: Record<string, unknown> | null }) => {
+  if (asset && Array.isArray(asset.path)) {
+    return asset.path;
+  }
+
+  return normalizePath(asset?.data?.path);
+};
+
+const getAssetPreload = (asset: { preload?: unknown; data?: Record<string, unknown> | null }) => {
+  if (typeof asset?.preload === 'boolean') {
+    return asset.preload;
+  }
+
+  const preload = asset?.data?.preload;
+  return typeof preload === 'boolean' ? preload : true;
+};
+
+const getAssetSource = (asset: { source?: unknown; data?: Record<string, unknown> | null }) => {
+  if (typeof asset?.source === 'boolean') {
+    return asset.source;
+  }
+
+  const source = asset?.data?.source;
+  return typeof source === 'boolean' ? source : true;
+};
+
+const buildPathFromParent = async (parentId: number | null) => {
+  if (!parentId) {
+    return [];
+  }
+
+  const client = getSupabaseClient();
+  const { data, error } = await client
+    .from('assets')
+    .select('*')
+    .eq('id', parentId)
+    .single();
+
+  if (error || !data) {
+    return [];
+  }
+
+  const parentPath = getAssetPath(data);
+  return parentPath.concat([parentId]);
 };
 
 const buildFileUrl = (assetId: number, filename: string) => {
@@ -92,6 +143,7 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
 
       const projectId = Number(fields.projectId || '');
       const branchId = fields.branchId || null;
+      const parentId = fields.parent ? Number(fields.parent) : null;
       const name = fields.name || fields.filename || filePart?.filename || '';
       const type = fields.type || '';
 
@@ -99,7 +151,18 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
         return reply.code(400).send({ error: 'missing_required_fields' });
       }
 
-      const dataPayload = safeJsonParse(fields.data) || undefined;
+      const dataPayload = safeJsonParse(fields.data) || {};
+      const path = await buildPathFromParent(parentId);
+      const preload = fields.preload === undefined ? undefined : fields.preload === 'true';
+      const source = fields.source === undefined ? undefined : fields.source === 'true';
+
+      const storedData = {
+        ...dataPayload,
+        path,
+        parentId,
+        ...(preload === undefined ? {} : { preload }),
+        ...(source === undefined ? {} : { source })
+      };
 
       const { data: assetRow, error: insertError } = await client
         .from('assets')
@@ -109,7 +172,7 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
           name,
           type,
           owner_id: userId,
-          data: dataPayload
+          data: storedData
         })
         .select('*')
         .single();
@@ -152,7 +215,37 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
         }
       }
 
-      return { ...assetRow, file: fileInfo || assetRow.file || null };
+      const resultAsset = {
+        id: assetRow.id,
+        uniqueId: assetRow.id,
+        name: assetRow.name,
+        type: assetRow.type,
+        tags: [],
+        meta: {},
+        data: storedData,
+        file: fileInfo || assetRow.file || null,
+        path,
+        preload: preload ?? true,
+        has_thumbnail: false,
+        source: source ?? true,
+        source_asset_id: null,
+        createdAt: assetRow.created_at
+      };
+
+      // Broadcast to editor clients via messenger
+      broadcastMessenger('asset.new', {
+        asset: {
+          id: String(assetRow.id),
+          branchId: branchId,
+          type: assetRow.type,
+          source: source ?? true,
+          status: 'complete',
+          source_asset_id: null,
+          createdAt: assetRow.created_at
+        }
+      });
+
+      return resultAsset;
     } catch (err) {
       return reply.code(500).send({ error: 'server_error' });
     }
@@ -189,14 +282,43 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
       }
 
       const updates: Record<string, any> = {};
+      const parentId = fields.parent ? Number(fields.parent) : null;
+      const nextPath = fields.parent ? await buildPathFromParent(parentId) : null;
+
+      let dataPayload: Record<string, any> | null = null;
+      if (fields.data) {
+        dataPayload = safeJsonParse(fields.data);
+      }
+      if (fields.preload !== undefined) {
+        dataPayload = dataPayload || {};
+        dataPayload.preload = fields.preload === 'true';
+      }
+      if (fields.source !== undefined) {
+        dataPayload = dataPayload || {};
+        dataPayload.source = fields.source === 'true';
+      }
+      if (nextPath) {
+        const { data: existing } = await client
+          .from('assets')
+          .select('*')
+          .eq('id', assetIdValue)
+          .single();
+
+        const baseData = dataPayload || existing?.data || {};
+        dataPayload = {
+          ...baseData,
+          path: nextPath,
+          parentId
+        };
+      }
       if (fields.name) {
         updates.name = fields.name;
       }
       if (fields.type) {
         updates.type = fields.type;
       }
-      if (fields.data) {
-        updates.data = safeJsonParse(fields.data);
+      if (dataPayload) {
+        updates.data = dataPayload;
       }
 
       const { data: existing, error: existingError } = await client
@@ -271,6 +393,10 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
       const filename = data.file?.filename || data.file?.name || data.name;
       const fileUrl = filename ? buildFileUrl(data.id, filename) : null;
 
+      const path = getAssetPath(data);
+      const preload = getAssetPreload(data);
+      const source = getAssetSource(data);
+
       return {
         id: data.id,
         uniqueId: data.id,
@@ -280,10 +406,10 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
         meta: data.meta || {},
         data: data.data || {},
         file: data.file || (fileUrl ? { filename, url: fileUrl } : null),
-        path: [],
-        preload: true,
+        path,
+        preload,
         has_thumbnail: false,
-        source: true,
+        source,
         source_asset_id: data.source_asset_id || null,
         createdAt: data.created_at
       };
@@ -303,6 +429,7 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
   app.get('/assets/:assetId/file/:filename', async (request, reply) => {
     try {
       const client = getSupabaseClient();
+      const bucket = getAssetsBucket();
       const { assetId, filename } = request.params as { assetId: string; filename: string };
       const assetIdValue = Number(assetId);
       if (!assetIdValue) {
@@ -320,12 +447,20 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
       }
 
       const storagePath = data.file?.storagePath || `${data.project_id}/${data.branch_id}/${assetIdValue}/${filename}`;
-      const signedUrl = await signStorageUrl(storagePath);
-      if (!signedUrl) {
+
+      // Download the file and stream it directly to avoid CORS redirect issues
+      const { data: fileData, error: dlError } = await client.storage.from(bucket).download(storagePath);
+      if (dlError || !fileData) {
         return reply.code(404).send({ error: 'file_not_found' });
       }
 
-      return reply.redirect(signedUrl);
+      const buffer = Buffer.from(await fileData.arrayBuffer());
+      const mime = data.file?.mime || 'application/octet-stream';
+      return reply
+        .header('Content-Type', mime)
+        .header('Content-Length', buffer.length)
+        .header('Cache-Control', 'public, max-age=3600')
+        .send(buffer);
     } catch (err) {
       return reply.code(500).send({ error: 'server_error' });
     }

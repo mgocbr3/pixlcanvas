@@ -1,6 +1,10 @@
 import type { FastifyInstance } from 'fastify';
 import { authenticate, getUserId } from '../lib/auth.js';
+import type { Database } from '../lib/database.types.js';
 import { getSupabaseClient } from '../lib/supabase.js';
+
+type SceneRow = Database['public']['Tables']['scenes']['Row'];
+type SceneInsert = Database['public']['Tables']['scenes']['Insert'];
 
 export const registerSceneRoutes = (app: FastifyInstance) => {
   app.get('/scenes', { preHandler: (req) => authenticate(app, req) }, async (request, reply) => {
@@ -40,14 +44,16 @@ export const registerSceneRoutes = (app: FastifyInstance) => {
         return reply.code(400).send({ error: 'projectId_and_branchId_required' });
       }
 
+      const scenePayload: SceneInsert = {
+        project_id: body.projectId,
+        branch_id: body.branchId,
+        name: body.name || 'New Scene',
+        owner_id: userId
+      };
+
       const { data, error } = await client
         .from('scenes')
-        .insert({
-          project_id: body.projectId,
-          branch_id: body.branchId,
-          name: body.name || 'New Scene',
-          owner_id: userId
-        })
+        .insert(scenePayload)
         .select('*')
         .single();
 
@@ -55,7 +61,7 @@ export const registerSceneRoutes = (app: FastifyInstance) => {
         return reply.code(500).send({ error: error.message });
       }
 
-      return data;
+      return data as SceneRow | null;
     } catch (err) {
       return reply.code(500).send({ error: 'server_error' });
     }
@@ -75,13 +81,14 @@ export const registerSceneRoutes = (app: FastifyInstance) => {
         return reply.code(404).send({ error: 'scene_not_found' });
       }
 
+      const scene = data as SceneRow;
       return {
-        id: data.id,
-        uniqueId: data.unique_id,
-        name: data.name,
-        projectId: data.project_id,
-        branchId: data.branch_id,
-        createdAt: data.created_at
+        id: scene.id,
+        uniqueId: scene.unique_id,
+        name: scene.name,
+        projectId: scene.project_id,
+        branchId: scene.branch_id,
+        createdAt: scene.created_at
       };
     } catch (err) {
       return reply.code(500).send({ error: 'server_error' });

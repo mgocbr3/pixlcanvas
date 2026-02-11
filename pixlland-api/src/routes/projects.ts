@@ -1,6 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import { authenticate, getUserId } from '../lib/auth.js';
+import type { Database } from '../lib/database.types.js';
 import { getSupabaseClient } from '../lib/supabase.js';
+
+type ProjectRow = Database['public']['Tables']['projects']['Row'];
+type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
+type BranchRow = Database['public']['Tables']['branches']['Row'];
+type BranchInsert = Database['public']['Tables']['branches']['Insert'];
+type AssetRow = Database['public']['Tables']['assets']['Row'];
+type SceneRow = Database['public']['Tables']['scenes']['Row'];
 
 export const registerProjectRoutes = (app: FastifyInstance) => {
   app.get('/projects', { preHandler: (req) => authenticate(app, req) }, async (request, reply) => {
@@ -40,28 +48,37 @@ export const registerProjectRoutes = (app: FastifyInstance) => {
         return reply.code(400).send({ error: 'name_required' });
       }
 
+      const projectPayload: ProjectInsert = {
+        name: body.name,
+        description: body.description || '',
+        private: body.private ?? true,
+        owner_id: userId
+      };
+
       const { data, error } = await client
         .from('projects')
-        .insert({
-          name: body.name,
-          description: body.description || '',
-          private: body.private ?? true,
-          owner_id: userId
-        })
+        .insert(projectPayload)
         .select('*')
         .single();
 
       if (error) {
         return reply.code(500).send({ error: error.message });
       }
+      const project = data as ProjectRow | null;
+      if (!project) {
+        return reply.code(500).send({ error: 'project_not_created' });
+      }
+
+      const branchPayload: BranchInsert = {
+        project_id: project.id,
+        name: 'main',
+        is_master: true,
+        created_by: userId
+      };
+
       const { data: branch, error: branchError } = await client
         .from('branches')
-        .insert({
-          project_id: data.id,
-          name: 'main',
-          is_master: true,
-          created_by: userId
-        })
+        .insert(branchPayload)
         .select('*')
         .single();
 
@@ -69,7 +86,7 @@ export const registerProjectRoutes = (app: FastifyInstance) => {
         return reply.code(500).send({ error: branchError.message });
       }
 
-      return { project: data, branch };
+      return { project, branch: branch as BranchRow | null };
     } catch (err) {
       return reply.code(500).send({ error: 'server_error' });
     }
@@ -120,22 +137,41 @@ export const registerProjectRoutes = (app: FastifyInstance) => {
         return reply.code(500).send({ error: error.message });
       }
 
-      const result = (data || []).map((asset) => ({
-        id: asset.id,
-        uniqueId: asset.id,
-        name: asset.name,
-        type: asset.type,
-        tags: [],
-        meta: asset.meta || {},
-        data: asset.data || {},
-        file: asset.file || null,
-        path: [],
-        preload: true,
-        has_thumbnail: false,
-        source: true,
-        source_asset_id: asset.source_asset_id || null,
-        createdAt: asset.created_at
-      }));
+      const assets = (data || []) as AssetRow[];
+      const result = assets.map((asset) => {
+        const dataObject = asset.data && typeof asset.data === 'object' && !Array.isArray(asset.data)
+          ? asset.data as Record<string, Database['public']['Tables']['assets']['Row']['data']>
+          : {};
+        const dataPath = dataObject.path;
+        const dataPreload = dataObject.preload;
+        const dataSource = dataObject.source;
+        const path = Array.isArray(asset.path)
+          ? asset.path
+          : (Array.isArray(dataPath) ? dataPath : []);
+        const preload = typeof asset.preload === 'boolean'
+          ? asset.preload
+          : (typeof dataPreload === 'boolean' ? dataPreload : true);
+        const source = typeof asset.source === 'boolean'
+          ? asset.source
+          : (typeof dataSource === 'boolean' ? dataSource : true);
+
+        return {
+          id: asset.id,
+          uniqueId: asset.id,
+          name: asset.name,
+          type: asset.type,
+          tags: asset.tags || [],
+          meta: asset.meta || {},
+          data: asset.data || {},
+          file: asset.file || null,
+          path,
+          preload,
+          has_thumbnail: false,
+          source,
+          source_asset_id: asset.source_asset_id || null,
+          createdAt: asset.created_at
+        };
+      });
 
       return result;
     } catch (err) {
@@ -168,7 +204,8 @@ export const registerProjectRoutes = (app: FastifyInstance) => {
         return reply.code(500).send({ error: error.message });
       }
 
-      const result = (data || []).map((scene) => ({
+      const scenes = (data || []) as SceneRow[];
+      const result = scenes.map((scene) => ({
         id: scene.id,
         uniqueId: scene.unique_id,
         name: scene.name,

@@ -9,6 +9,7 @@ type ThemeConfig = {
 
 const THEME_STORAGE_KEY = 'editor:theme';
 const DEFAULT_THEME: ThemeName = 'classic';
+const CACHE_BUSTER = Date.now().toString();
 
 const THEME_CONFIG: Record<ThemeName, ThemeConfig> = {
     classic: {
@@ -73,6 +74,14 @@ const getThemeFromStorage = (): ThemeName => {
     return isValidTheme(stored) ? stored : DEFAULT_THEME;
 };
 
+const withCacheBuster = (href: string) => {
+    if (href.includes('?')) {
+        return `${href}&v=${CACHE_BUSTER}`;
+    }
+
+    return `${href}?v=${CACHE_BUSTER}`;
+};
+
 const updateStylesheet = (pattern: string, href: string) => {
     const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
     const matched = links.filter((link) => link.getAttribute('href')?.includes(pattern));
@@ -81,9 +90,10 @@ const updateStylesheet = (pattern: string, href: string) => {
         return;
     }
 
+    const nextHref = withCacheBuster(href);
     matched.forEach((link) => {
-        if (link.getAttribute('href') !== href) {
-            link.setAttribute('href', href);
+        if (link.getAttribute('href') !== nextHref) {
+            link.setAttribute('href', nextHref);
         }
     });
 };

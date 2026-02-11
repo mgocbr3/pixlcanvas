@@ -1,6 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from './database.types.js';
 
-let cachedClient: ReturnType<typeof createClient> | null = null;
+let cachedClient: SupabaseClient<Database> | null = null;
 
 export const getSupabaseClient = () => {
   if (cachedClient) {
@@ -14,7 +15,7 @@ export const getSupabaseClient = () => {
     throw new Error('Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
   }
 
-  cachedClient = createClient(url, serviceKey, {
+  cachedClient = createClient<Database>(url, serviceKey, {
     auth: { persistSession: false }
   });
 

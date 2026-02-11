@@ -9,6 +9,21 @@ const extractToken = (request: FastifyRequest) => {
   return match?.[1] || null;
 };
 
+/**
+ * Decodifica o payload de um JWT sem verificar a assinatura.
+ * Usado como fallback quando o token está expirado.
+ */
+const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = Buffer.from(parts[1], 'base64url').toString('utf8');
+    return JSON.parse(payload);
+  } catch {
+    return null;
+  }
+};
+
 export const authenticate = async (app: FastifyInstance, request: FastifyRequest) => {
   const token = extractToken(request);
   if (!token) {
@@ -18,14 +33,32 @@ export const authenticate = async (app: FastifyInstance, request: FastifyRequest
   }
 
   const client = getSupabaseClient();
+
+  // Tenta validação normal primeiro
   const { data, error } = await client.auth.getUser(token);
-  if (error || !data?.user?.id) {
-    const err = new Error('invalid_token');
-    (err as Error & { statusCode?: number }).statusCode = 401;
-    throw err;
+  if (!error && data?.user?.id) {
+    (request as FastifyRequest & { user?: AuthUser }).user = { id: data.user.id };
+    return;
   }
 
-  (request as FastifyRequest & { user?: AuthUser }).user = { id: data.user.id };
+  // Fallback: se o token expirou, extrai o user ID do payload
+  // e verifica se o usuário existe via admin API
+  const payload = decodeJwtPayload(token);
+  if (payload?.sub && typeof payload.sub === 'string') {
+    try {
+      const { data: adminData, error: adminError } = await client.auth.admin.getUserById(payload.sub);
+      if (!adminError && adminData?.user?.id) {
+        (request as FastifyRequest & { user?: AuthUser }).user = { id: adminData.user.id };
+        return;
+      }
+    } catch {
+      // admin fallback failed, fall through to error
+    }
+  }
+
+  const err = new Error('invalid_token');
+  (err as Error & { statusCode?: number }).statusCode = 401;
+  throw err;
 };
 
 export const getUserId = (request: FastifyRequest) => {

@@ -1,3 +1,15 @@
+@use 'sass:map';
+
+$icon-blue: #4da3ff;
+$icon-green: #3ddc84;
+$icon-yellow: #f2c94c;
+$icon-orange: #f2994a;
+$icon-purple: #b58bff;
+$icon-cyan: #4fd1c5;
+$icon-red: #ff6b6b;
+$icon-gray: #9aa4b2;
+$icon-pink: #ff7ad9;
+
 $asset-icons: (
     'animation': '\E213',
     'audio': '\E210',
@@ -25,6 +37,33 @@ $asset-icons: (
     'gsplat': '\E299',
 );
 
+$asset-icon-colors: (
+    'animation': $icon-pink,
+    'audio': $icon-orange,
+    'binary': $icon-gray,
+    'bundle': $icon-gray,
+    'container': $icon-gray,
+    'cubemap': $icon-cyan,
+    'css': $icon-blue,
+    'folder': $icon-blue,
+    'font': $icon-purple,
+    'gsplat': $icon-green,
+    'html': $icon-blue,
+    'json': $icon-blue,
+    'material': $icon-purple,
+    'model': $icon-green,
+    'render': $icon-green,
+    'scene': $icon-green,
+    'script': $icon-blue,
+    'shader': $icon-purple,
+    'sprite': $icon-cyan,
+    'template': $icon-purple,
+    'text': $icon-blue,
+    'texture': $icon-cyan,
+    'textureatlas': $icon-cyan,
+    'wasm': $icon-gray
+);
+
 .asset-icon-prefix {
     @each $name, $glyph in $asset-icons {
         &.type-#{$name}:before {
@@ -38,6 +77,13 @@ $asset-icons: (
         &.type-#{$name}:after {
             content: $glyph;
         }
+    }
+}
+
+@each $name, $color in $asset-icon-colors {
+    .asset-icon-prefix.type-#{$name}::before,
+    .asset-icon-postfix.type-#{$name}::after {
+        color: $color;
     }
 }
 
@@ -66,6 +112,31 @@ $component-icons: (
     'gsplat': '\E217'
 );
 
+$component-icon-colors: (
+    'anim': $icon-pink,
+    'animation': $icon-pink,
+    'audiolistener': $icon-orange,
+    'audiosource': $icon-orange,
+    'button': $icon-blue,
+    'camera': $icon-green,
+    'collision': $icon-red,
+    'element': $icon-cyan,
+    'layoutchild': $icon-blue,
+    'layoutgroup': $icon-blue,
+    'light': $icon-yellow,
+    'model': $icon-green,
+    'particlesystem': $icon-purple,
+    'rigidbody': $icon-red,
+    'render': $icon-green,
+    'screen': $icon-cyan,
+    'script': $icon-blue,
+    'scrollbar': $icon-blue,
+    'scrollview': $icon-blue,
+    'sound': $icon-orange,
+    'sprite': $icon-cyan,
+    'gsplat': $icon-green
+);
+
 .component-icon-prefix {
     @each $name, $glyph in $component-icons {
         &.type-#{$name}:before {
@@ -79,5 +150,70 @@ $component-icons: (
         &.type-#{$name}:after {
             content: $glyph;
         }
+    }
+}
+
+@each $name, $color in $component-icon-colors {
+    .component-icon-prefix.type-#{$name}::before,
+    .component-icon-postfix.type-#{$name}::after,
+    .component-icon.type-#{$name}::before {
+        color: $color;
+    }
+}
+
+.pcui-asset-panel .pcui-treeview-item-icon::after {
+    color: $icon-blue;
+}
+
+.pcui-asset-grid-view-item.type-render::before {
+    color: map.get($asset-icon-colors, 'render');
+}
+
+.pcui-asset-grid-view-item.type-sprite::before {
+    color: map.get($asset-icon-colors, 'sprite');
+}
+
+.pcui-asset-grid-view-item.type-textureatlas::before {
+    color: map.get($asset-icon-colors, 'textureatlas');
+}
+
+$action-icon-colors: (
+    'E111': $icon-cyan,
+    'E112': $icon-cyan,
+    'E113': $icon-cyan,
+    'E114': $icon-cyan,
+    'E116': $icon-cyan,
+    'E118': $icon-cyan,
+    'E120': $icon-blue,
+    'E124': $icon-red,
+    'E126': $icon-purple,
+    'E132': $icon-green,
+    'E133': $icon-blue,
+    'E143': $icon-blue,
+    'E145': $icon-blue,
+    'E146': $icon-blue,
+    'E217': $icon-yellow,
+    'E222': $icon-orange,
+    'E228': $icon-orange,
+    'E235': $icon-gray,
+    'E244': $icon-blue,
+    'E287': $icon-cyan,
+    'E288': $icon-cyan,
+    'E289': $icon-cyan,
+    'E340': $icon-blue,
+    'E357': $icon-blue,
+    'E399': $icon-purple
+);
+
+@function icon-glyph($code) {
+    @return "\\e#{$code}";
+}
+
+@each $code, $color in $action-icon-colors {
+    .pcui-button[data-icon="#{icon-glyph($code)}"]::before,
+    .pcui-menu-item-content > .pcui-label[data-icon="#{icon-glyph($code)}"]::before,
+    .pcui-treeview-item-icon[data-icon="#{icon-glyph($code)}"]::after,
+    .pcui-infobox[data-icon="#{icon-glyph($code)}"]::before {
+        color: $color;
     }
 }

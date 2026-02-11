@@ -123,8 +123,10 @@ class Button extends Element {
         if (value) {
             // set data-icon attribute but first convert the value to a code point
             this.dom.setAttribute('data-icon', String.fromCodePoint(parseInt(value, 16)));
+            this.dom.setAttribute('data-icon-code', value);
         } else {
             this.dom.removeAttribute('data-icon');
+            this.dom.removeAttribute('data-icon-code');
         }
     }
 

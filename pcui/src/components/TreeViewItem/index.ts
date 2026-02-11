@@ -619,8 +619,10 @@ class TreeViewItem extends Container {
         if (value) {
             // set data-icon attribute but first convert the value to a code point
             this._labelIcon.dom.setAttribute('data-icon', String.fromCodePoint(parseInt(value, 16)));
+            this._labelIcon.dom.setAttribute('data-icon-code', value);
         } else {
             this._labelIcon.dom.removeAttribute('data-icon');
+            this._labelIcon.dom.removeAttribute('data-icon-code');
         }
     }
 

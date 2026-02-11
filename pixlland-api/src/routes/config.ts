@@ -62,13 +62,16 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
         projectRow = data;
       }
 
-      const apiUrl = getEnv('PIXLLAND_API_URL', 'http://localhost:8787');
-      const homeUrl = getEnv('PIXLLAND_HOME_URL', 'http://localhost:8787');
+      // O editor sempre roda no proxy (3487), então API calls devem usar /api (relativo)
+      // O config-loader busca direto do backend (8788), mas os REST calls do editor
+      // são feitos no contexto do navegador (proxy em 3487)
+      const apiUrl = '/api';
       const frontendUrl = getEnv('PIXLLAND_FRONTEND_URL', 'http://localhost:3487/');
+      const homeUrl = apiUrl; // tips/store e outros endpoints passam pelo proxy
       const staticUrl = getEnv('PIXLLAND_STATIC_URL', frontendUrl);
-      const imagesUrl = getEnv('PIXLLAND_IMAGES_URL', apiUrl);
+      const imagesUrl = frontendUrl; // imagens devem vir do proxy/frontend
       const engineUrl = getEnv('PIXLLAND_ENGINE_URL', `${frontendUrl}playcanvas.js`);
-      const realtimeHttp = getEnv('PIXLLAND_REALTIME_HTTP', 'http://localhost:3001');
+      const realtimeHttp = getEnv('PIXLLAND_REALTIME_HTTP', 'ws://localhost:3001');
       const relayWs = getEnv('PIXLLAND_RELAY_WS', 'ws://localhost:3002');
       const messengerWs = getEnv('PIXLLAND_MESSENGER_WS', 'ws://localhost:3003');
       const diskAllowance = getNumberEnv('PIXLLAND_DISK_ALLOWANCE_BYTES', 1073741824);
@@ -79,6 +82,46 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           entities: {
             $of: {
               components: {
+                camera: {
+                  enabled: { $type: 'boolean', $default: true },
+                  clearColor: { $type: ['number'], $default: [0.118, 0.118, 0.118, 1] },
+                  clearColorBuffer: { $type: 'boolean', $default: true },
+                  clearDepthBuffer: { $type: 'boolean', $default: true },
+                  frustumCulling: { $type: 'boolean', $default: true },
+                  fov: { $type: 'number', $default: 45 },
+                  projection: { $type: 'number', $default: 0 },
+                  orthoHeight: { $type: 'number', $default: 4 },
+                  nearClip: { $type: 'number', $default: 0.1 },
+                  farClip: { $type: 'number', $default: 1000 },
+                  priority: { $type: 'number', $default: 0 },
+                  rect: { $type: ['number'], $default: [0, 0, 1, 1] },
+                  layers: { $type: ['number'], $default: [0, 1, 2, 3, 4] }
+                },
+                light: {
+                  enabled: { $type: 'boolean', $default: true },
+                  type: { $type: 'string', $default: 'directional' },
+                  color: { $type: ['number'], $default: [1, 1, 1] },
+                  intensity: { $type: 'number', $default: 1 },
+                  range: { $type: 'number', $default: 8 },
+                  innerConeAngle: { $type: 'number', $default: 40 },
+                  outerConeAngle: { $type: 'number', $default: 45 },
+                  castShadows: { $type: 'boolean', $default: true },
+                  shadowDistance: { $type: 'number', $default: 16 },
+                  shadowResolution: { $type: 'number', $default: 1024 },
+                  shadowBias: { $type: 'number', $default: 0.4 },
+                  normalOffsetBias: { $type: 'number', $default: 0.05 },
+                  vsmBlurMode: { $type: 'number', $default: 1 },
+                  vsmBlurSize: { $type: 'number', $default: 11 },
+                  vsmBias: { $type: 'number', $default: 0.01 },
+                  cookieAsset: { $type: 'number', $default: null, $editorType: 'asset' },
+                  cookieIntensity: { $type: 'number', $default: 1 },
+                  cookieFalloff: { $type: 'boolean', $default: true },
+                  cookieChannel: { $type: 'string', $default: 'rgb' },
+                  cookieAngle: { $type: 'number', $default: 0 },
+                  cookieScale: { $type: ['number'], $default: [1, 1] },
+                  cookieOffset: { $type: ['number'], $default: [0, 0] },
+                  layers: { $type: ['number'], $default: [0] }
+                },
                 render: {
                   enabled: { $type: 'boolean', $default: true },
                   type: { $type: 'string', $default: 'box' },
@@ -165,8 +208,8 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           api: apiUrl,
           launch: `${frontendUrl.replace(/\/$/, '')}/launch/`,
           home: homeUrl,
-          store: `${homeUrl}/store`,
-          howdoi: `${homeUrl}/howdoi`,
+          store: `${apiUrl}/store`,
+          howdoi: `${apiUrl}/howdoi`,
           frontend: frontendUrl,
           static: staticUrl,
           images: imagesUrl,

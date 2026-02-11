@@ -8,6 +8,120 @@ const REALTIME_PORT = 3001;
 const RELAY_PORT = 3002;
 const MESSENGER_PORT = 3003;
 
+const DEFAULT_SCENE_SETTINGS = {
+  physics: {
+    gravity: [0, -9.8, 0]
+  },
+  render: {
+    fog_end: 1000,
+    fog_start: 1,
+    global_ambient: [0.3, 0.3, 0.3],  // Aumentado para melhor iluminação ambiente
+    fog_color: [0, 0, 0],
+    fog: 'none',
+    fog_density: 0.01,
+    gamma_correction: 1,  // GAMMA_SRGB para cores corretas
+    tonemapping: 0,  // TONEMAP_LINEAR
+    exposure: 1.2,  // Aumentado levemente para objetos mais visíveis
+    skybox: null,
+    skyboxIntensity: 1,
+    skyboxRotation: [0, 0, 0],
+    skyboxMip: 0,
+    lightmapSizeMultiplier: 16,
+    lightmapMaxResolution: 2048,
+    lightmapMode: 1
+  }
+};
+
+const DEFAULT_SCENE_ENTITIES = {
+  root: {
+    name: 'Root',
+    parent: null,
+    resource_id: 'root',
+    tags: [],
+    enabled: true,
+    components: {},
+    scale: [1, 1, 1],
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+    children: ['camera', 'light']
+  },
+  camera: {
+    name: 'Camera',
+    parent: 'root',
+    resource_id: 'camera',
+    tags: [],
+    enabled: true,
+    components: {
+      camera: {
+        fov: 45,
+        projection: 0,
+        clearColor: [0.118, 0.118, 0.118, 1],
+        clearColorBuffer: true,
+        clearDepthBuffer: true,
+        frustumCulling: true,
+        enabled: true,
+        orthoHeight: 4,
+        farClip: 1000,
+        nearClip: 0.1,
+        priority: 0,
+        rect: [0, 0, 1, 1],
+        layers: [0, 1, 2, 3, 4]
+      }
+    },
+    scale: [1, 1, 1],
+    position: [4, 3.5, 4],
+    rotation: [-30, 45, 0],
+    children: []
+  },
+  light: {
+    name: 'Directional Light',
+    parent: 'root',
+    resource_id: 'light',
+    tags: [],
+    enabled: true,
+    components: {
+      light: {
+        enabled: true,
+        bake: false,
+        bakeDir: true,
+        affectDynamic: true,
+        affectLightmapped: false,
+        isStatic: false,
+        color: [1, 1, 1],
+        intensity: 1.5,  // Aumentado para melhor iluminação
+        type: 'directional',
+        shadowDistance: 40,  // Aumentado para sombras mais distantes
+        range: 8,
+        innerConeAngle: 40,
+        outerConeAngle: 45,
+        shape: 0,
+        falloffMode: 0,
+        castShadows: true,
+        shadowUpdateMode: 2,
+        shadowType: 1,  // PCF 3x3 para sombras melhores
+        shadowResolution: 2048,  // Resolução maior para sombras mais nítidas
+        shadowBias: 0.2,  // Bias ajustado
+        normalOffsetBias: 0.05,
+        vsmBlurMode: 1,
+        vsmBlurSize: 11,
+        vsmBias: 0.01,
+        cookieAsset: null,
+        cookieIntensity: 1,
+        cookieFalloff: true,
+        cookieChannel: 'rgb',
+        cookieAngle: 0,
+        cookieScale: [1, 1],
+        cookieOffset: [0, 0],
+        layers: [0]
+      }
+    },
+    scale: [1, 1, 1],
+    position: [3, 5, -3],  // Posição mais alta e otimizada
+    rotation: [45, 45, 0],  // Ângulo padrão clássico de iluminação
+    children: []
+  }
+};
+
 const toText = (data) => (typeof data === 'string' ? data : data.toString());
 
 const createSupabaseClient = () => {
@@ -18,6 +132,35 @@ const createSupabaseClient = () => {
   }
 
   return createClient(url, serviceKey, { auth: { persistSession: false } });
+};
+
+const isPlainObject = (value) => {
+  return value && typeof value === 'object' && !Array.isArray(value);
+};
+
+const mergeDefaults = (target, defaults) => {
+  if (Array.isArray(defaults)) {
+    return Array.isArray(target) ? target : defaults;
+  }
+
+  if (!isPlainObject(defaults)) {
+    return target ?? defaults;
+  }
+
+  const output = isPlainObject(target) ? { ...target } : {};
+
+  for (const key of Object.keys(defaults)) {
+    const defaultValue = defaults[key];
+    const existingValue = output[key];
+
+    if (existingValue === undefined || existingValue === null) {
+      output[key] = defaultValue;
+    } else if (isPlainObject(defaultValue)) {
+      output[key] = mergeDefaults(existingValue, defaultValue);
+    }
+  }
+
+  return output;
 };
 
 const ensureDoc = (connection, collection, id, data) => new Promise((resolve) => {
@@ -41,6 +184,63 @@ const ensureDoc = (connection, collection, id, data) => new Promise((resolve) =>
   });
 });
 
+const ensureSceneDoc = (connection, scene) => new Promise((resolve) => {
+  const sceneId = (scene.unique_id || scene.id).toString();
+  const doc = connection.get('scenes', sceneId);
+
+  doc.fetch((err) => {
+    if (err) {
+      console.error(`[realtime] fetch error scenes:${sceneId}`, err);
+      resolve();
+      return;
+    }
+
+    const baseData = {
+      item_id: scene.id,
+      branch_id: scene.branch_id || 'local',
+      name: scene.name || 'Main Scene',
+      entities: DEFAULT_SCENE_ENTITIES,
+      settings: DEFAULT_SCENE_SETTINGS
+    };
+
+    if (!doc.type) {
+      doc.create(baseData, 'json0', (createErr) => {
+        if (createErr) {
+          console.error(`[realtime] create error scenes:${sceneId}`, createErr);
+        }
+        resolve();
+      });
+      return;
+    }
+
+    const currentSettings = doc.data?.settings || {};
+    const nextSettings = mergeDefaults(currentSettings, DEFAULT_SCENE_SETTINGS);
+    const hasEntities = doc.data?.entities && Object.keys(doc.data.entities).length > 0;
+    const nextEntities = hasEntities ? doc.data.entities : DEFAULT_SCENE_ENTITIES;
+
+    const ops = [];
+    if (JSON.stringify(nextSettings) !== JSON.stringify(currentSettings)) {
+      ops.push({ p: ['settings'], od: currentSettings, oi: nextSettings });
+    }
+
+    if (JSON.stringify(nextEntities) !== JSON.stringify(doc.data?.entities || {})) {
+      ops.push({ p: ['entities'], od: doc.data?.entities, oi: nextEntities });
+    }
+
+    if (!ops.length) {
+      resolve();
+      return;
+    }
+
+    doc.submitOp(ops, (opErr) => {
+      if (opErr) {
+        console.error(`[realtime] patch error scenes:${sceneId}`, opErr);
+      }
+      resolve();
+    });
+  });
+});
+
 const seedDocsFromSupabase = async (backend) => {
   const client = createSupabaseClient();
   if (!client) {
@@ -57,21 +257,13 @@ const seedDocsFromSupabase = async (backend) => {
   if (scenes.error) {
     console.error('[realtime] failed to load scenes', scenes.error);
   } else if (scenes.data) {
-    await Promise.all(scenes.data.map((scene) => ensureDoc(connection, 'scenes', scene.unique_id || scene.id, {
-      item_id: scene.id,
-      branch_id: scene.branch_id,
-      name: scene.name || 'Main Scene',
-      entities: {},
-      settings: {
-        physics: {},
-        render: {}
-      }
-    })));
+    await Promise.all(scenes.data.map((scene) => ensureSceneDoc(connection, scene)));
   }
 
   if (assets.error) {
     console.error('[realtime] failed to load assets', assets.error);
   } else if (assets.data) {
+    console.log(`[realtime] seeding ${assets.data.length} asset docs into ShareDB`);
     await Promise.all(assets.data.map((asset) => ensureDoc(connection, 'assets', asset.id, {
       item_id: asset.id,
       branch_id: asset.branch_id,
@@ -89,8 +281,38 @@ const seedDocsFromSupabase = async (backend) => {
   }
 };
 
+const fetchAssetFromDb = async (assetId) => {
+  const client = createSupabaseClient();
+  if (!client) return null;
+  try {
+    const { data, error } = await client
+      .from('assets')
+      .select('*')
+      .eq('id', Number(assetId))
+      .single();
+    if (error || !data) return null;
+    return {
+      item_id: data.id,
+      branch_id: data.branch_id || 'local',
+      name: data.name,
+      type: data.type,
+      file: data.file || {},
+      data: data.data || {},
+      tags: [],
+      path: Array.isArray(data.data?.path) ? data.data.path : [],
+      preload: typeof data.data?.preload === 'boolean' ? data.data.preload : true,
+      has_thumbnail: false,
+      source: typeof data.data?.source === 'boolean' ? data.data.source : true,
+      source_asset_id: data.source_asset_id || null
+    };
+  } catch {
+    return null;
+  }
+};
+
 const createShareDbStream = (socket) => {
   const stream = new Duplex({ objectMode: true });
+  stream._ended = false;
 
   stream._read = () => {};
   stream._write = (data, _encoding, callback) => {
@@ -100,7 +322,14 @@ const createShareDbStream = (socket) => {
     callback();
   };
 
+  stream.safePush = (data) => {
+    if (!stream._ended) {
+      stream.push(data);
+    }
+  };
+
   socket.on('close', () => {
+    stream._ended = true;
     stream.push(null);
   });
 
@@ -116,6 +345,7 @@ const createRealtimeServer = async (port) => {
 
   wss.on('connection', (socket) => {
     clients.add(socket);
+    console.log(`[realtime] new client connected (total: ${clients.size})`);
 
     const stream = createShareDbStream(socket);
     backend.listen(stream);
@@ -124,6 +354,7 @@ const createRealtimeServer = async (port) => {
       const data = toText(raw);
 
       if (data.startsWith('auth')) {
+        console.log('[realtime] client authenticated');
         socket.send(`auth${JSON.stringify({ ok: true })}`);
         return;
       }
@@ -161,30 +392,35 @@ const createRealtimeServer = async (port) => {
 
       if (msg && (msg.a === 's' || msg.a === 'f') && msg.c && msg.d) {
         if (msg.c === 'scenes') {
-          await ensureDoc(backend.connect(), 'scenes', msg.d, {
-            item_id: msg.d,
+          await ensureSceneDoc(backend.connect(), {
+            id: msg.d,
+            unique_id: msg.d,
             branch_id: 'local',
-            name: `Scene ${msg.d}`,
-            entities: {},
-            settings: {
-              physics: {},
-              render: {}
-            }
+            name: `Scene ${msg.d}`
           });
         }
         if (msg.c === 'assets') {
-          await ensureDoc(backend.connect(), 'assets', msg.d, {
+          console.log(`[realtime] on-demand asset doc request for id=${msg.d}`);
+          const realData = await fetchAssetFromDb(msg.d);
+          console.log(`[realtime] fetchAssetFromDb(${msg.d}):`, realData ? 'found' : 'NOT FOUND');
+          await ensureDoc(backend.connect(), 'assets', msg.d, realData || {
             item_id: msg.d,
             branch_id: 'local',
             name: `Asset ${msg.d}`,
             type: 'unknown',
             file: {},
-            data: {}
+            data: {},
+            tags: [],
+            path: [],
+            preload: true,
+            has_thumbnail: false,
+            source: true,
+            source_asset_id: null
           });
         }
       }
 
-      stream.push(msg);
+      stream.safePush(msg);
     });
 
     socket.on('close', () => {

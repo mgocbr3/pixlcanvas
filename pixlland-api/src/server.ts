@@ -11,6 +11,7 @@ import { registerSceneRoutes } from './routes/scenes.js';
 import { registerAssetRoutes } from './routes/assets.js';
 import { registerUserRoutes } from './routes/users.js';
 import { registerEditorConfigRoutes } from './routes/config.js';
+import { registerEditorMiscRoutes } from './routes/editor-misc.js';
 
 const app = Fastify({ logger: true });
 
@@ -21,7 +22,9 @@ const uploadMaxBytes = Number(process.env.UPLOAD_MAX_BYTES || 524288000);
 
 await app.register(cors, {
   origin: corsOrigin,
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  exposedHeaders: ['Authorization']
 });
 
 await app.register(multipart, {
@@ -40,6 +43,7 @@ await app.register(jwt, {
 
 registerHealthRoutes(app);
 registerEditorConfigRoutes(app);
+registerEditorMiscRoutes(app);
 registerProjectRoutes(app);
 registerSceneRoutes(app);
 registerAssetRoutes(app);
