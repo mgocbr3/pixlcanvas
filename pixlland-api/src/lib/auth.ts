@@ -25,6 +25,18 @@ const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
 };
 
 export const authenticate = async (app: FastifyInstance, request: FastifyRequest) => {
+  // Dev-only bypass: lets local editor usage work without continuously pasting tokens.
+  // Enabled explicitly via env var to avoid accidental use in real environments.
+  const devBypassEnabled = process.env.PIXLLAND_DEV_AUTH_BYPASS === '1';
+  if (devBypassEnabled) {
+    const devUserId = process.env.PIXLLAND_DEV_USER_ID || 'anonymous';
+    const token = extractToken(request);
+    if (!token) {
+      (request as FastifyRequest & { user?: AuthUser }).user = { id: devUserId };
+      return;
+    }
+  }
+
   const token = extractToken(request);
   if (!token) {
     const err = new Error('missing_token');
@@ -58,6 +70,14 @@ export const authenticate = async (app: FastifyInstance, request: FastifyRequest
 
   const err = new Error('invalid_token');
   (err as Error & { statusCode?: number }).statusCode = 401;
+
+  // If dev bypass is enabled, fall back to a fixed local user instead of hard-failing.
+  if (process.env.PIXLLAND_DEV_AUTH_BYPASS === '1') {
+    const devUserId = process.env.PIXLLAND_DEV_USER_ID || 'anonymous';
+    (request as FastifyRequest & { user?: AuthUser }).user = { id: devUserId };
+    return;
+  }
+
   throw err;
 };
 

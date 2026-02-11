@@ -25,12 +25,15 @@ const showError = (message: string) => {
     getParam(hashParams, ['access_token', 'token']) ||
     localStorage.getItem('pixlland_access_token');
 
-  if (!token) {
+  // In local development we allow running without a token (backend can be configured
+  // to bypass auth). In production, token-based auth is still expected.
+  const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  if (token) {
+    localStorage.setItem('pixlland_access_token', token);
+  } else if (!isLocalhost) {
     showError('Missing access token. Provide ?access_token=... or #access_token=...');
     return;
   }
-
-  localStorage.setItem('pixlland_access_token', token);
 
   const apiUrl =
     getParam(params, ['api', 'apiUrl']) ||
@@ -61,7 +64,9 @@ const showError = (message: string) => {
 
   const xhr = new XMLHttpRequest();
   xhr.open('GET', configUrl, false);
-  xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+  if (token) {
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+  }
   xhr.send(null);
 
   if (xhr.status < 200 || xhr.status >= 300) {
