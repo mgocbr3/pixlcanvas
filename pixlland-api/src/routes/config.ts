@@ -25,7 +25,9 @@ const isUuid = (value: string | null | undefined) => {
 export const registerEditorConfigRoutes = (app: FastifyInstance) => {
   app.get('/editor/config.js', async (request, reply) => {
     try {
-      const userId = getUserId(request) || 'anonymous';
+      const devBypassEnabled = process.env.PIXLLAND_DEV_AUTH_BYPASS === '1';
+      const devUserId = process.env.PIXLLAND_DEV_USER_ID || 'anonymous';
+      const userId = getUserId(request) || (devBypassEnabled ? devUserId : 'anonymous');
 
       const { sceneId, projectId, branchId } = request.query as {
         sceneId?: string;
@@ -58,6 +60,21 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           sceneRow = data;
           resolvedProjectId = data.project_id;
           resolvedBranchId = data.branch_id;
+        }
+      }
+
+      if (client && !resolvedProjectId) {
+        const { data: projectData } = await client
+          .from('projects')
+          .select('*')
+          .eq('owner_id', userId)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (projectData?.id) {
+          projectRow = projectData;
+          resolvedProjectId = projectData.id;
         }
       }
 
