@@ -87,6 +87,30 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
             resolvedBranchName = branchData.name || 'main';
           }
         }
+
+        // Resolve a real scene when none was provided explicitly. This avoids
+        // using the synthetic fallback "default" scene id, which breaks
+        // realtime mapping to Supabase rows (and features such as default skybox).
+        if (!sceneRow) {
+          let sceneQuery = client
+            .from('scenes')
+            .select('*')
+            .eq('project_id', resolvedProjectId)
+            .order('created_at', { ascending: true })
+            .limit(1);
+
+          if (resolvedBranchId) {
+            sceneQuery = sceneQuery.eq('branch_id', resolvedBranchId);
+          }
+
+          const { data: sceneData } = await sceneQuery.maybeSingle();
+          if (sceneData) {
+            sceneRow = sceneData;
+            if (!resolvedBranchId && sceneData.branch_id) {
+              resolvedBranchId = sceneData.branch_id;
+            }
+          }
+        }
       }
 
       // O editor sempre roda no proxy (3487), então API calls devem usar /api (relativo)
