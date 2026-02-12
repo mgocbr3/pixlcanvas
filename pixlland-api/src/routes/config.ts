@@ -22,6 +22,19 @@ const isUuid = (value: string | null | undefined) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 };
 
+const sanitizeProjectSettings = (settings: unknown) => {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+    return {};
+  }
+
+  const cleaned = { ...(settings as Record<string, unknown>) };
+  if (cleaned.editor && (typeof cleaned.editor !== 'object' || Array.isArray(cleaned.editor))) {
+    delete cleaned.editor;
+  }
+
+  return cleaned;
+};
+
 export const registerEditorConfigRoutes = (app: FastifyInstance) => {
   app.get('/editor/config.js', async (request, reply) => {
     try {
@@ -369,7 +382,7 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
             id: 'project_settings_1',
             engineV2: true,
             useLegacyScripts: false
-          }, projectRow?.settings || {}),
+          }, sanitizeProjectSettings(projectRow?.settings)),
           permissions: {
             read: [userId],
             write: [userId],

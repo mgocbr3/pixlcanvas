@@ -3,6 +3,7 @@ import { Observer } from '@playcanvas/observer';
 import { ObserverSync } from '@/common/observer-sync';
 
 editor.once('load', () => {
+    const logger = typeof log !== 'undefined' ? log : console;
     editor.method('settings:create', (args) => {
         // settings observer
         const settings = new Observer(args.data);
@@ -28,7 +29,7 @@ editor.once('load', () => {
 
                 // handle errors
                 doc.on('error', (err) => {
-                    log.error(err);
+                    logger.error(err);
                     editor.emit(`settings:${args.name}:error`, err);
                 });
 

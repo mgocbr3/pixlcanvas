@@ -16,8 +16,8 @@ const __dirname = path.dirname(__filename);
 
 const DEFAULT_SKYBOX_ENABLED = process.env.PIXLLAND_DEFAULT_SKYBOX !== '0';
 const DEFAULT_SKYBOX_ASSET_NAME = 'Pixlland Default Skybox';
-const DEFAULT_SKYBOX_FILENAME = 'pixlland-default-skybox.dds';
-const DEFAULT_SKYBOX_SOURCE_FILE = path.resolve(__dirname, '../../engine/examples/assets/cubemaps/helipad.dds');
+const DEFAULT_SKYBOX_FILENAME = 'pixlland-default-skybox-env-atlas.png';
+const DEFAULT_SKYBOX_SOURCE_FILE = path.resolve(__dirname, '../../engine/examples/assets/cubemaps/helipad-env-atlas.png');
 
 const DEFAULT_PROJECT_SETTINGS = {
   engineV2: true,
@@ -39,6 +39,27 @@ const DEFAULT_PROJECT_SETTINGS = {
     cameraGammaCorrection: 1,
     showFog: true,
     iconSize: 1
+  }
+};
+
+const DEFAULT_PROJECT_ONLY_SETTINGS = {
+  engineV2: true,
+  useLegacyScripts: false,
+  scripts: [],
+  loadingScreenScript: null
+};
+
+const DEFAULT_PROJECT_USER_SETTINGS = {
+  editor: {
+    ...DEFAULT_PROJECT_SETTINGS.editor
+  },
+  branch: null,
+  favoriteBranches: []
+};
+
+const DEFAULT_USER_SETTINGS = {
+  editor: {
+    ...DEFAULT_PROJECT_SETTINGS.editor
   }
 };
 
@@ -157,6 +178,46 @@ const DEFAULT_SCENE_ENTITIES = {
 
 const toText = (data) => (typeof data === 'string' ? data : data.toString());
 
+const toNumericIdList = (value) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((entry) => Number(entry))
+    .filter((id) => Number.isInteger(id) && id > 0);
+};
+
+const getAssetPathFromRow = (row) => {
+  if (Array.isArray(row?.path)) {
+    return row.path;
+  }
+
+  if (row?.data && typeof row.data === 'object' && !Array.isArray(row.data) && Array.isArray(row.data.path)) {
+    return row.data.path;
+  }
+
+  return [];
+};
+
+const startsWithPath = (pathValue, prefix) => {
+  if (!Array.isArray(pathValue) || !Array.isArray(prefix)) {
+    return false;
+  }
+
+  if (pathValue.length < prefix.length) {
+    return false;
+  }
+
+  for (let i = 0; i < prefix.length; i++) {
+    if (pathValue[i] !== prefix[i]) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 const createSupabaseClient = () => {
   const url = process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -177,6 +238,17 @@ const isUuid = (value) => {
 };
 
 const skyboxAssetCache = new Map();
+
+const DEFAULT_SKYBOX_DATA = {
+  name: DEFAULT_SKYBOX_ASSET_NAME,
+  textures: [null, null, null, null, null, null],
+  type: 'rgbp',
+  minFilter: 1,
+  magFilter: 1,
+  anisotropy: 1,
+  rgbm: false,
+  mipmaps: false
+};
 
 const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId }) => {
   if (!DEFAULT_SKYBOX_ENABLED || !supabase) {
@@ -201,24 +273,34 @@ const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId
 
     let assetId = existing?.id || null;
 
+    let resolvedOwnerId = isUuid(ownerId) ? ownerId : null;
+    if (!resolvedOwnerId) {
+      const { data: projectOwner } = await supabase
+        .from('projects')
+        .select('owner_id')
+        .eq('id', projectId)
+        .maybeSingle();
+      if (isUuid(projectOwner?.owner_id)) {
+        resolvedOwnerId = projectOwner.owner_id;
+      }
+    }
+
+    if (!resolvedOwnerId) {
+      console.warn('[realtime] default skybox: missing valid owner_id; skipping asset insert');
+      return null;
+    }
+
     if (!assetId) {
       const { data: inserted, error: insertError } = await supabase
         .from('assets')
         .insert({
           project_id: projectId,
           branch_id: branchId,
-          owner_id: ownerId,
+          owner_id: resolvedOwnerId,
           name: DEFAULT_SKYBOX_ASSET_NAME,
           type: 'cubemap',
-          // Minimal cubemap data; the DDS file provides the actual prefiltered cubemap.
-          data: {
-            name: DEFAULT_SKYBOX_ASSET_NAME,
-            textures: [null, null, null, null, null, null],
-            minFilter: 5,
-            magFilter: 1,
-            anisotropy: 1,
-            rgbm: false
-          }
+          // Minimal cubemap data; the env atlas file provides the actual prefiltered map.
+          data: DEFAULT_SKYBOX_DATA
         })
         .select('id')
         .single();
@@ -235,7 +317,7 @@ const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId
     const storagePath = `${projectId}/${branchId}/${assetId}/${DEFAULT_SKYBOX_FILENAME}`;
 
     // If file already recorded on asset, assume it's uploaded.
-    const hasFileRecorded = !!existing?.file?.storagePath;
+    const hasFileRecorded = !!existing?.file?.storagePath && existing?.file?.filename === DEFAULT_SKYBOX_FILENAME;
 
     if (!hasFileRecorded) {
       const buffer = await fs.readFile(DEFAULT_SKYBOX_SOURCE_FILE);
@@ -244,7 +326,7 @@ const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId
         .from(bucket)
         .upload(storagePath, buffer, {
           upsert: true,
-          contentType: 'image/dds'
+          contentType: 'image/png'
         });
 
       if (uploadError) {
@@ -255,7 +337,7 @@ const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId
       const fileInfo = {
         filename: DEFAULT_SKYBOX_FILENAME,
         size: buffer.length,
-        mime: 'image/dds',
+        mime: 'image/png',
         url: `/api/assets/${assetId}/file/${encodeURIComponent(DEFAULT_SKYBOX_FILENAME)}`,
         storagePath
       };
@@ -268,6 +350,28 @@ const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId
       if (updateError) {
         console.warn('[realtime] default skybox: file update failed', updateError.message || updateError);
         // not fatal; file exists in storage
+      }
+    }
+
+    const currentData = existing?.data && typeof existing.data === 'object' && !Array.isArray(existing.data)
+      ? existing.data
+      : {};
+    const needsDataUpdate =
+      currentData.type !== DEFAULT_SKYBOX_DATA.type ||
+      currentData.minFilter !== DEFAULT_SKYBOX_DATA.minFilter ||
+      currentData.magFilter !== DEFAULT_SKYBOX_DATA.magFilter ||
+      currentData.mipmaps !== DEFAULT_SKYBOX_DATA.mipmaps ||
+      currentData.rgbm !== DEFAULT_SKYBOX_DATA.rgbm ||
+      !Array.isArray(currentData.textures);
+
+    if (needsDataUpdate) {
+      const { error: dataUpdateError } = await supabase
+        .from('assets')
+        .update({ data: { ...currentData, ...DEFAULT_SKYBOX_DATA } })
+        .eq('id', assetId);
+
+      if (dataUpdateError) {
+        console.warn('[realtime] default skybox: data update failed', dataUpdateError.message || dataUpdateError);
       }
     }
 
@@ -323,6 +427,67 @@ const ensureDoc = (connection, collection, id, data) => new Promise((resolve) =>
     doc.create(data, 'json0', (createErr) => {
       if (createErr) {
         console.error(`[realtime] create error ${collection}:${id}`, createErr);
+      }
+      resolve();
+    });
+  });
+});
+
+const getSettingsDefaultsById = (id) => {
+  const settingsId = String(id || '');
+
+  if (settingsId.startsWith('project_settings_')) {
+    return DEFAULT_PROJECT_ONLY_SETTINGS;
+  }
+
+  if (settingsId.startsWith('project_')) {
+    return DEFAULT_PROJECT_USER_SETTINGS;
+  }
+
+  if (settingsId.startsWith('user_')) {
+    return DEFAULT_USER_SETTINGS;
+  }
+
+  if (settingsId.startsWith('project-private_')) {
+    return {};
+  }
+
+  return DEFAULT_PROJECT_ONLY_SETTINGS;
+};
+
+const ensureSettingsDoc = (connection, id) => new Promise((resolve) => {
+  const settingsId = String(id || '');
+  const defaults = getSettingsDefaultsById(settingsId);
+  const doc = connection.get('settings', settingsId);
+
+  doc.fetch((err) => {
+    if (err) {
+      console.error(`[realtime] fetch error settings:${settingsId}`, err);
+      resolve();
+      return;
+    }
+
+    if (!doc.type) {
+      doc.create(defaults, 'json0', (createErr) => {
+        if (createErr) {
+          console.error(`[realtime] create error settings:${settingsId}`, createErr);
+        }
+        resolve();
+      });
+      return;
+    }
+
+    const current = isPlainObject(doc.data) ? doc.data : {};
+    const next = mergeDefaults(current, defaults);
+
+    if (JSON.stringify(current) === JSON.stringify(next)) {
+      resolve();
+      return;
+    }
+
+    doc.submitOp([{ p: [], od: current, oi: next }], (opErr) => {
+      if (opErr) {
+        console.error(`[realtime] patch error settings:${settingsId}`, opErr);
       }
       resolve();
     });
@@ -446,11 +611,32 @@ const ensureSceneDoc = (connection, scene) => new Promise((resolve) => {
     }
 
     (async () => {
-      const currentRender = doc.data?.settings?.render || {};
-      if (!currentRender.skybox) {
+      if (DEFAULT_SKYBOX_ENABLED) {
         const skyboxAssetId = await getDefaultSkyboxAssetId();
         if (skyboxAssetId) {
-          ops.push({ p: ['settings', 'render', 'skybox'], oi: skyboxAssetId });
+          const effectiveSettings = ops.find((op) => op.p.length === 1 && op.p[0] === 'settings')?.oi || nextSettings;
+          const effectiveRender = isPlainObject(effectiveSettings?.render) ? effectiveSettings.render : {};
+
+          if (effectiveRender.skybox !== skyboxAssetId) {
+            const withSkyboxSettings = {
+              ...effectiveSettings,
+              render: {
+                ...effectiveRender,
+                skybox: skyboxAssetId
+              }
+            };
+
+            const settingsOpIndex = ops.findIndex((op) => op.p.length === 1 && op.p[0] === 'settings');
+            if (settingsOpIndex >= 0) {
+              ops[settingsOpIndex] = {
+                p: ['settings'],
+                od: ops[settingsOpIndex].od,
+                oi: withSkyboxSettings
+              };
+            } else {
+              ops.push({ p: ['settings'], od: currentSettings, oi: withSkyboxSettings });
+            }
+          }
         }
       }
 
@@ -538,6 +724,239 @@ const fetchAssetFromDb = async (assetId) => {
   }
 };
 
+const messengerClients = new Set();
+
+const broadcastMessengerEvent = (name, data) => {
+  const payload = JSON.stringify({ name, data });
+  for (const client of messengerClients) {
+    if (client.readyState === client.OPEN) {
+      client.send(payload);
+    }
+  }
+};
+
+const applyFsMove = async ({ ids, to }, backend) => {
+  const client = createSupabaseClient();
+  const moveIds = toNumericIdList(ids);
+  if (!client || !moveIds.length) {
+    return [];
+  }
+
+  const { data: movingRows, error: movingError } = await client
+    .from('assets')
+    .select('*')
+    .in('id', moveIds)
+    .limit(moveIds.length);
+
+  if (movingError || !movingRows?.length) {
+    return [];
+  }
+
+  const projectId = movingRows[0].project_id;
+  const branchId = movingRows[0].branch_id;
+
+  const { data: allRows, error: listError } = await client
+    .from('assets')
+    .select('*')
+    .eq('project_id', projectId)
+    .eq('branch_id', branchId)
+    .limit(5000);
+
+  if (listError || !allRows) {
+    return [];
+  }
+
+  const movingSet = new Set(movingRows.map((row) => row.id));
+  const movingRoots = movingRows.filter((row) => {
+    const path = getAssetPathFromRow(row);
+    return !path.some((ancestorId) => movingSet.has(ancestorId));
+  });
+
+  let targetRow = null;
+  if (to !== null && to !== undefined) {
+    const targetId = Number(to);
+    targetRow = allRows.find((row) => row.id === targetId) || null;
+  }
+
+  const targetPath = targetRow ? getAssetPathFromRow(targetRow).concat([targetRow.id]) : [];
+  const patches = [];
+
+  for (const root of movingRoots) {
+    const oldRootPath = getAssetPathFromRow(root);
+    const oldPrefix = oldRootPath.concat([root.id]);
+    const newRootPath = [...targetPath];
+
+    const descendants = allRows.filter((row) => startsWithPath(getAssetPathFromRow(row), oldPrefix));
+
+    for (const row of [root, ...descendants]) {
+      const rowPath = getAssetPathFromRow(row);
+      const suffix = startsWithPath(rowPath, oldPrefix) ? rowPath.slice(oldPrefix.length) : [];
+      const nextPath = row.id === root.id
+        ? newRootPath
+        : newRootPath.concat([root.id], suffix);
+
+      const nextParentId = nextPath.length ? nextPath[nextPath.length - 1] : null;
+      const nextData = {
+        ...(row.data && typeof row.data === 'object' && !Array.isArray(row.data) ? row.data : {}),
+        path: nextPath,
+        parentId: nextParentId
+      };
+
+      await client
+        .from('assets')
+        .update({ data: nextData })
+        .eq('id', row.id);
+
+      patches.push({
+        uniqueId: row.id,
+        path: nextPath
+      });
+    }
+  }
+
+  if (backend && patches.length) {
+    const connection = backend.connect();
+    for (const patch of patches) {
+      const doc = connection.get('assets', String(patch.uniqueId));
+      await new Promise((resolve) => {
+        doc.fetch((err) => {
+          if (err || !doc.type) {
+            resolve();
+            return;
+          }
+
+          const currentPath = Array.isArray(doc.data?.path) ? doc.data.path : [];
+          const currentData = (doc.data?.data && typeof doc.data.data === 'object' && !Array.isArray(doc.data.data)) ? doc.data.data : {};
+          const currentDataPath = Array.isArray(currentData.path) ? currentData.path : [];
+
+          const operations = [];
+          if (JSON.stringify(currentPath) !== JSON.stringify(patch.path)) {
+            operations.push({ p: ['path'], od: currentPath, oi: patch.path });
+          }
+          if (JSON.stringify(currentDataPath) !== JSON.stringify(patch.path)) {
+            operations.push({ p: ['data', 'path'], od: currentDataPath, oi: patch.path });
+          }
+
+          if (!operations.length) {
+            resolve();
+            return;
+          }
+
+          doc.submitOp(operations, () => resolve());
+        });
+      });
+    }
+  }
+
+  return patches;
+};
+
+const applyFsDelete = async ({ ids }) => {
+  const client = createSupabaseClient();
+  const deleteIds = toNumericIdList(ids);
+  if (!client || !deleteIds.length) {
+    return [];
+  }
+
+  const { data: roots, error: rootsError } = await client
+    .from('assets')
+    .select('*')
+    .in('id', deleteIds)
+    .limit(deleteIds.length);
+
+  if (rootsError || !roots?.length) {
+    return [];
+  }
+
+  const projectId = roots[0].project_id;
+  const branchId = roots[0].branch_id;
+
+  const { data: allRows, error: allError } = await client
+    .from('assets')
+    .select('*')
+    .eq('project_id', projectId)
+    .eq('branch_id', branchId)
+    .limit(5000);
+
+  if (allError || !allRows) {
+    return [];
+  }
+
+  const toDeleteSet = new Set();
+  for (const root of roots) {
+    toDeleteSet.add(root.id);
+    if (root.type === 'folder') {
+      const prefix = getAssetPathFromRow(root).concat([root.id]);
+      for (const row of allRows) {
+        if (startsWithPath(getAssetPathFromRow(row), prefix)) {
+          toDeleteSet.add(row.id);
+        }
+      }
+    }
+  }
+
+  const toDelete = Array.from(toDeleteSet);
+  if (!toDelete.length) {
+    return [];
+  }
+
+  await client
+    .from('assets')
+    .delete()
+    .in('id', toDelete);
+
+  return toDelete;
+};
+
+const applyFsDuplicate = async ({ ids }) => {
+  const client = createSupabaseClient();
+  const duplicateIds = toNumericIdList(ids);
+  if (!client || !duplicateIds.length) {
+    return [];
+  }
+
+  const { data: sourceRows, error: sourceError } = await client
+    .from('assets')
+    .select('*')
+    .in('id', duplicateIds)
+    .limit(duplicateIds.length);
+
+  if (sourceError || !sourceRows?.length) {
+    return [];
+  }
+
+  const createdAssets = [];
+
+  for (const source of sourceRows) {
+    const sourceData = (source.data && typeof source.data === 'object' && !Array.isArray(source.data)) ? source.data : {};
+    const clonedData = {
+      ...sourceData,
+      path: getAssetPathFromRow(source),
+      parentId: sourceData.parentId ?? (getAssetPathFromRow(source).length ? getAssetPathFromRow(source).slice(-1)[0] : null)
+    };
+
+    const { data: inserted, error: insertError } = await client
+      .from('assets')
+      .insert({
+        project_id: source.project_id,
+        branch_id: source.branch_id,
+        owner_id: source.owner_id,
+        name: `${source.name} Copy`,
+        type: source.type,
+        data: clonedData,
+        file: source.file || null
+      })
+      .select('id, branch_id, type, created_at')
+      .single();
+
+    if (!insertError && inserted?.id) {
+      createdAssets.push(inserted);
+    }
+  }
+
+  return createdAssets;
+};
+
 const createShareDbStream = (socket) => {
   const stream = new Duplex({ objectMode: true });
   stream._ended = false;
@@ -596,6 +1015,59 @@ const createRealtimeServer = async (port) => {
         return;
       }
 
+      if (data.startsWith('fs')) {
+        try {
+          const payload = JSON.parse(data.slice(2));
+          if (!payload || typeof payload !== 'object') {
+            return;
+          }
+
+          if (payload.op === 'move') {
+            const patches = await applyFsMove(payload, backend);
+            if (patches.length) {
+              const message = `fs:paths:${JSON.stringify(patches)}`;
+              for (const client of clients) {
+                if (client.readyState === client.OPEN) {
+                  client.send(message);
+                }
+              }
+            }
+            return;
+          }
+
+          if (payload.op === 'delete') {
+            const deletedIds = await applyFsDelete(payload);
+            if (deletedIds.length) {
+              broadcastMessengerEvent('assets.delete', {
+                assets: deletedIds.map((id) => String(id))
+              });
+            }
+            return;
+          }
+
+          if (payload.op === 'duplicate') {
+            const createdAssets = await applyFsDuplicate(payload);
+            for (const asset of createdAssets) {
+              broadcastMessengerEvent('asset.new', {
+                asset: {
+                  id: String(asset.id),
+                  branchId: asset.branch_id || 'local',
+                  type: asset.type || 'unknown',
+                  source: true,
+                  status: 'complete',
+                  source_asset_id: null,
+                  createdAt: asset.created_at || new Date().toISOString()
+                }
+              });
+            }
+            return;
+          }
+        } catch (err) {
+          console.warn('[realtime] failed to process fs message', err);
+          return;
+        }
+      }
+
       if (!data.startsWith('{') && !data.startsWith('[')) {
         return;
       }
@@ -649,7 +1121,7 @@ const createRealtimeServer = async (port) => {
         }
         if (msg.c === 'settings') {
           console.log(`[realtime] on-demand settings doc request for id=${msg.d}`);
-          await ensureDoc(backend.connect(), 'settings', msg.d, DEFAULT_PROJECT_SETTINGS);
+          await ensureSettingsDoc(backend.connect(), msg.d);
         }
         if (msg.c === 'user_data') {
           console.log(`[realtime] on-demand user_data doc request for id=${msg.d}`);
@@ -799,7 +1271,7 @@ const createRelayServer = (port) => {
 
 const createMessengerServer = (port) => {
   const wss = new WebSocketServer({ port });
-  const clients = new Set();
+  const clients = messengerClients;
   let nextUserId = 1;
 
   wss.on('connection', (socket) => {

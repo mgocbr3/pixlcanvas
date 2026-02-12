@@ -88,6 +88,165 @@ const signStorageUrl = async (storagePath: string) => {
   return data.signedUrl;
 };
 
+const buildCopyName = (name: string) => {
+  if (!name) {
+    return 'Copy';
+  }
+
+  const match = name.match(/^(.*)\sCopy(?:\s(\d+))?$/);
+  if (!match) {
+    return `${name} Copy`;
+  }
+
+  const base = match[1];
+  const index = Number(match[2] || '1');
+  return `${base} Copy ${index + 1}`;
+};
+
+const copyAssetFileInfo = (asset: any, newId: number) => {
+  if (!asset?.file || typeof asset.file !== 'object') {
+    return null;
+  }
+
+  const filename = asset.file.filename || asset.file.name;
+  if (!filename) {
+    return null;
+  }
+
+  return {
+    ...asset.file,
+    filename,
+    url: buildFileUrl(newId, filename)
+  };
+};
+
+const duplicateAssetTree = async (
+  client: ReturnType<typeof getSupabaseClient>,
+  rootAssetId: number,
+  branchId: string,
+  parentId: number | null
+) => {
+  const { data: root, error: rootError } = await client
+    .from('assets')
+    .select('*')
+    .eq('id', rootAssetId)
+    .single();
+
+  if (rootError || !root) {
+    throw new Error('asset_not_found');
+  }
+
+  const rootPath = getAssetPath(root);
+  const rootPrefix = rootPath.concat([root.id]);
+
+  const { data: projectAssets, error: listError } = await client
+    .from('assets')
+    .select('*')
+    .eq('project_id', root.project_id)
+    .eq('branch_id', branchId)
+    .limit(5000);
+
+  if (listError) {
+    throw new Error(listError.message);
+  }
+
+  const assets = projectAssets || [];
+  const descendants = assets
+    .filter((row) => {
+      const path = getAssetPath(row);
+      if (path.length < rootPrefix.length) {
+        return false;
+      }
+
+      for (let i = 0; i < rootPrefix.length; i++) {
+        if (path[i] !== rootPrefix[i]) {
+          return false;
+        }
+      }
+
+      return row.id !== root.id;
+    })
+    .sort((a, b) => getAssetPath(a).length - getAssetPath(b).length);
+
+  const nextRootPath = parentId ? await buildPathFromParent(parentId) : [];
+  const oldToNew = new Map<number, number>();
+  const createdIds: number[] = [];
+
+  const insertClone = async (source: any, sourceParentId: number | null, explicitName?: string) => {
+    const mappedParent = sourceParentId === null
+      ? null
+      : (oldToNew.get(sourceParentId) ?? sourceParentId);
+
+    const path = mappedParent ? await buildPathFromParent(mappedParent) : [];
+    const sourceData = (source.data && typeof source.data === 'object' && !Array.isArray(source.data)) ? source.data : {};
+    const clonedData = {
+      ...sourceData,
+      path,
+      parentId: mappedParent
+    };
+
+    const { data: inserted, error: insertError } = await client
+      .from('assets')
+      .insert({
+        project_id: source.project_id,
+        branch_id: branchId,
+        owner_id: source.owner_id,
+        name: explicitName || source.name,
+        type: source.type,
+        data: clonedData,
+        file: null
+      })
+      .select('*')
+      .single();
+
+    if (insertError || !inserted) {
+      throw new Error(insertError?.message || 'asset_duplicate_failed');
+    }
+
+    const fileInfo = copyAssetFileInfo(source, inserted.id);
+    if (fileInfo) {
+      await client
+        .from('assets')
+        .update({ file: fileInfo })
+        .eq('id', inserted.id);
+    }
+
+    oldToNew.set(source.id, inserted.id);
+    createdIds.push(inserted.id);
+    return inserted;
+  };
+
+  const duplicatedRoot = await insertClone(root, parentId, buildCopyName(root.name));
+
+  for (const child of descendants) {
+    const childPath = getAssetPath(child);
+    const oldParentId = childPath[childPath.length - 1] ?? null;
+    await insertClone(child, oldParentId);
+  }
+
+  return {
+    root: duplicatedRoot,
+    createdIds,
+    rootPath: nextRootPath
+  };
+};
+
+const resolveAssetOwnerId = async (projectId: number, userId: string) => {
+  const client = getSupabaseClient();
+
+  const { data: projectRow } = await client
+    .from('projects')
+    .select('owner_id')
+    .eq('id', projectId)
+    .maybeSingle();
+
+  if (projectRow?.owner_id && typeof projectRow.owner_id === 'string') {
+    return projectRow.owner_id;
+  }
+
+  return userId;
+};
+
 export const registerAssetRoutes = (app: FastifyInstance) => {
   const emptyPng = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=',
@@ -155,6 +314,7 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
       const path = await buildPathFromParent(parentId);
       const preload = fields.preload === undefined ? undefined : fields.preload === 'true';
       const source = fields.source === undefined ? undefined : fields.source === 'true';
+      const ownerId = await resolveAssetOwnerId(projectId, userId);
 
       const storedData = {
         ...dataPayload,
@@ -171,7 +331,7 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
           branch_id: branchId,
           name,
           type,
-          owner_id: userId,
+          owner_id: ownerId,
           data: storedData
         })
         .select('*')
@@ -415,6 +575,97 @@ export const registerAssetRoutes = (app: FastifyInstance) => {
       };
     } catch (err) {
       return reply.code(500).send({ error: 'server_error' });
+    }
+  });
+
+  app.post('/assets/:assetId/reimport', { preHandler: (req) => authenticate(app, req) }, async (request, reply) => {
+    const { assetId } = request.params as { assetId: string };
+    const assetIdValue = Number(assetId);
+    if (!assetIdValue) {
+      return reply.code(400).send({ error: 'invalid_asset_id' });
+    }
+
+    return {
+      ok: true,
+      id: assetIdValue,
+      status: 'complete'
+    };
+  });
+
+  app.post('/assets/:assetId/duplicate', { preHandler: (req) => authenticate(app, req) }, async (request, reply) => {
+    try {
+      const client = getSupabaseClient();
+      const { assetId } = request.params as { assetId: string };
+      const assetIdValue = Number(assetId);
+      if (!assetIdValue) {
+        return reply.code(400).send({ error: 'invalid_asset_id' });
+      }
+
+      const body = (request.body || {}) as { branchId?: string };
+      const { data: existing, error: existingError } = await client
+        .from('assets')
+        .select('branch_id')
+        .eq('id', assetIdValue)
+        .single();
+
+      if (existingError || !existing) {
+        return reply.code(404).send({ error: 'asset_not_found' });
+      }
+
+      const branchId = body.branchId || existing.branch_id;
+      const duplicated = await duplicateAssetTree(client, assetIdValue, branchId, null);
+
+      return {
+        id: duplicated.root.id,
+        uniqueId: duplicated.root.id,
+        branchId,
+        created: duplicated.createdIds
+      };
+    } catch (err: any) {
+      return reply.code(500).send({ error: err?.message || 'server_error' });
+    }
+  });
+
+  app.post('/assets/paste', { preHandler: (req) => authenticate(app, req) }, async (request, reply) => {
+    try {
+      const client = getSupabaseClient();
+      const body = (request.body || {}) as {
+        branchId?: string;
+        targetBranchId?: string;
+        assets?: string[];
+        targetParentId?: number | null;
+      };
+
+      const sourceIds = (body.assets || []).map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0);
+      if (!sourceIds.length) {
+        return reply.code(400).send({ error: 'missing_assets' });
+      }
+
+      const { data: roots, error: rootsError } = await client
+        .from('assets')
+        .select('id, branch_id')
+        .in('id', sourceIds)
+        .limit(sourceIds.length);
+
+      if (rootsError || !roots?.length) {
+        return reply.code(404).send({ error: 'assets_not_found' });
+      }
+
+      const branchId = body.targetBranchId || body.branchId || roots[0].branch_id;
+      const targetParentId = typeof body.targetParentId === 'number' ? body.targetParentId : null;
+      const created: number[] = [];
+
+      for (const root of roots) {
+        const duplicated = await duplicateAssetTree(client, root.id, branchId, targetParentId);
+        created.push(...duplicated.createdIds);
+      }
+
+      return {
+        ok: true,
+        created
+      };
+    } catch (err: any) {
+      return reply.code(500).send({ error: err?.message || 'server_error' });
     }
   });
 

@@ -128,7 +128,7 @@ export const set = (obj: any, path: string, value: any): boolean => {
     const parts = path.split('.');
     let ref = obj;
     for (let i = 0; i < parts.length - 1; i++) {
-        if (!ref.hasOwnProperty(parts[i])) {
+        if (!ref.hasOwnProperty(parts[i]) || ref[parts[i]] === null || typeof ref[parts[i]] !== 'object' || Array.isArray(ref[parts[i]])) {
             ref[parts[i]] = {};
         }
         ref = ref[parts[i]];

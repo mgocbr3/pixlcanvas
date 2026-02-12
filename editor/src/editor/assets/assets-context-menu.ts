@@ -538,6 +538,17 @@ editor.once('load', () => {
     });
     menu.append(menuItemEdit);
 
+    const menuItemRename = new MenuItem({
+        text: 'Rename',
+        icon: ICONS.EDIT,
+        onSelect: () => {
+            editor.call('assets:rename-select');
+        }
+    });
+    if (editor.call('permissions:write')) {
+        menu.append(menuItemRename);
+    }
+
     // duplicate
     const menuItemDuplicate = new MenuItem({
         text: 'Duplicate',
@@ -707,6 +718,8 @@ editor.once('load', () => {
                 menuItemEdit.hidden = true;
             }
 
+            menuItemRename.hidden = false;
+
             // create atlas
             menuItemTextureToAtlas.hidden = (currentAsset.get('type') !== 'texture' || currentAsset.get('source') || currentAsset.get('task') || !editor.call('permissions:write'));
             menuItemTextureToCubemap.hidden = menuItemTextureToAtlas.hidden;
@@ -865,6 +878,7 @@ editor.once('load', () => {
             menuItemDownload.hidden = true;
             menuItemDuplicate.hidden = true;
             menuItemEdit.hidden = true;
+            menuItemRename.hidden = true;
             menuItemDelete.hidden = true;
             menuItemReferences.hidden = true;
             menuItemReplace.hidden = true;

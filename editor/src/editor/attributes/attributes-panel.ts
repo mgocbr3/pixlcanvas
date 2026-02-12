@@ -1279,7 +1279,7 @@ editor.once('load', () => {
                     if (empty) {
                         field.image = '';
                     } else if (!asset) {
-                        field.image = `${config.url.home}/editor/scene/img/asset-placeholder-texture.png`;
+                        field.image = `${config.url.home}/static/img/pixlland-logo.png`;
                     } else {
                         if (asset.has('thumbnails.m')) {
                             const src = asset.get('thumbnails.m');
@@ -1289,7 +1289,7 @@ editor.once('load', () => {
                                 field.image = buildQueryUrl(config.url.home + asset.get('thumbnails.m'), { t: asset.get('file.hash') });
                             }
                         } else {
-                            field.image = `/editor/scene/img/asset-placeholder-${asset.get('type')}.png`;
+                            field.image = `/static/img/pixlland-logo.png`;
                         }
 
                         if (args.kind === 'material') {
