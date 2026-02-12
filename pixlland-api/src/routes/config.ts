@@ -88,6 +88,26 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           }
         }
 
+        // If no sceneId was provided, pick the first scene from the project/branch.
+        if (!sceneRow) {
+          let sceneQuery = client
+            .from('scenes')
+            .select('*')
+            .eq('project_id', resolvedProjectId)
+            .order('created_at', { ascending: true })
+            .limit(1);
+
+          if (resolvedBranchId) {
+            sceneQuery = sceneQuery.eq('branch_id', resolvedBranchId);
+          }
+
+          const { data: sceneData } = await sceneQuery.maybeSingle();
+          if (sceneData) {
+            sceneRow = sceneData;
+            resolvedBranchId = sceneData.branch_id || resolvedBranchId;
+          }
+        }
+
         // Resolve a real scene when none was provided explicitly. This avoids
         // using the synthetic fallback "default" scene id, which breaks
         // realtime mapping to Supabase rows (and features such as default skybox).
