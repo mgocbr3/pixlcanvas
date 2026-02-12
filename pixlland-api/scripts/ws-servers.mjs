@@ -211,9 +211,7 @@ const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId
             magFilter: 1,
             anisotropy: 1,
             rgbm: false
-          },
-          preload: true,
-          source: true
+          }
         })
         .select('id')
         .single();
