@@ -169,6 +169,13 @@ const createSupabaseClient = () => {
 
 const getAssetsBucket = () => process.env.SUPABASE_ASSETS_BUCKET || 'assets';
 
+const isUuid = (value) => {
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+};
+
 const skyboxAssetCache = new Map();
 
 const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId }) => {
@@ -377,7 +384,25 @@ const ensureSceneDoc = (connection, scene) => new Promise((resolve) => {
         }
 
         const projectId = sceneRow.project_id;
-        const branchId = sceneRow.branch_id || (scene.branch_id || 'main');
+        let branchId = isUuid(sceneRow.branch_id) ? sceneRow.branch_id : (isUuid(scene.branch_id) ? scene.branch_id : null);
+
+        if (!branchId) {
+          const { data: branchRow } = await supabase
+            .from('branches')
+            .select('id')
+            .eq('project_id', projectId)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          if (branchRow?.id) {
+            branchId = branchRow.id;
+          }
+        }
+
+        if (!branchId) {
+          return null;
+        }
+
         const ownerId = sceneRow.owner_id || 'anonymous';
         return await ensureDefaultSkyboxAsset({ supabase, projectId, branchId, ownerId });
       } catch {

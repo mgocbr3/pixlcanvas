@@ -15,6 +15,13 @@ const getNumberEnv = (key: string, fallback: number) => {
   return Number.isFinite(value) ? value : fallback;
 };
 
+const isUuid = (value: string | null | undefined) => {
+  if (!value) {
+    return false;
+  }
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+};
+
 export const registerEditorConfigRoutes = (app: FastifyInstance) => {
   app.get('/editor/config.js', async (request, reply) => {
     try {
@@ -29,7 +36,8 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
       let sceneRow: any = null;
       let projectRow: any = null;
       let resolvedProjectId: number | null = projectId ? Number(projectId) : null;
-      let resolvedBranchId: string | null = branchId || null;
+      let resolvedBranchId: string | null = isUuid(branchId) ? branchId! : null;
+      let resolvedBranchName = 'main';
 
       // Only query Supabase if it's configured
       let client: any = null;
@@ -62,6 +70,22 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
 
         if (!error && data) {
           projectRow = data;
+        }
+
+        // Resolve a valid branch UUID when none is available from query/scene.
+        if (!resolvedBranchId) {
+          const { data: branchData } = await client
+            .from('branches')
+            .select('id, name')
+            .eq('project_id', resolvedProjectId)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+
+          if (branchData?.id) {
+            resolvedBranchId = branchData.id;
+            resolvedBranchName = branchData.name || 'main';
+          }
         }
       }
 
@@ -226,8 +250,8 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           id: userId,
           username: 'local-user',
           branch: {
-            id: resolvedBranchId || 'main',
-            name: 'main',
+            id: resolvedBranchId || '',
+            name: resolvedBranchName,
             createdAt: new Date().toISOString(),
             latestCheckpointId: null,
             merge: null
@@ -265,7 +289,7 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
           privateAssets: projectRow?.private ?? true,
           hasPrivateSettings: false,
           thumbnails: {},
-          masterBranch: resolvedBranchId || 'main',
+          masterBranch: resolvedBranchId || '',
           settings: Object.assign({
             id: 'project_settings_1',
             engineV2: true,
