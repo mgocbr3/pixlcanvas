@@ -3,6 +3,7 @@ dist/
 build/
 coverage/
 .cache/
+engine-hosting/
 .DS_Store
 *.log
 .env
