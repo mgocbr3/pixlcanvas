@@ -78,6 +78,20 @@ export const registerEditorConfigRoutes = (app: FastifyInstance) => {
         }
       }
 
+      if (client && !resolvedProjectId && devBypassEnabled) {
+        const { data: anyProject } = await client
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (anyProject?.id) {
+          projectRow = anyProject;
+          resolvedProjectId = anyProject.id;
+        }
+      }
+
       if (client && resolvedProjectId) {
         const { data, error } = await client
           .from('projects')
