@@ -10,6 +10,9 @@ declare namespace NodeJS {
     PIXLLAND_DEV_AUTH_BYPASS?: string;
     PIXLLAND_DEV_USER_ID?: string;
 
+    // Defaults
+    PIXLLAND_DEFAULT_SKYBOX?: string;
+
     // Editor proxy
     EDITOR_PORT?: string;
     PIXLLAND_API_URL?: string;

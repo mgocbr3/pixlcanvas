@@ -1,12 +1,23 @@
 import 'dotenv/config';
+import fs from 'fs/promises';
 import { WebSocketServer } from 'ws';
 import ShareDB from 'sharedb';
 import { createClient } from '@supabase/supabase-js';
 import { Duplex } from 'stream';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const REALTIME_PORT = 3001;
 const RELAY_PORT = 3002;
 const MESSENGER_PORT = 3003;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const DEFAULT_SKYBOX_ENABLED = process.env.PIXLLAND_DEFAULT_SKYBOX !== '0';
+const DEFAULT_SKYBOX_ASSET_NAME = 'Pixlland Default Skybox';
+const DEFAULT_SKYBOX_FILENAME = 'pixlland-default-skybox.dds';
+const DEFAULT_SKYBOX_SOURCE_FILE = path.resolve(__dirname, '../../engine/examples/assets/cubemaps/helipad.dds');
 
 const DEFAULT_PROJECT_SETTINGS = {
   engineV2: true,
@@ -156,6 +167,113 @@ const createSupabaseClient = () => {
   return createClient(url, serviceKey, { auth: { persistSession: false } });
 };
 
+const getAssetsBucket = () => process.env.SUPABASE_ASSETS_BUCKET || 'assets';
+
+const skyboxAssetCache = new Map();
+
+const ensureDefaultSkyboxAsset = async ({ supabase, projectId, branchId, ownerId }) => {
+  if (!DEFAULT_SKYBOX_ENABLED || !supabase) {
+    return null;
+  }
+
+  const cacheKey = `${projectId}:${branchId}`;
+  if (skyboxAssetCache.has(cacheKey)) {
+    return skyboxAssetCache.get(cacheKey);
+  }
+
+  try {
+    // Find existing asset
+    const { data: existing } = await supabase
+      .from('assets')
+      .select('id, file')
+      .eq('project_id', projectId)
+      .eq('branch_id', branchId)
+      .eq('type', 'cubemap')
+      .eq('name', DEFAULT_SKYBOX_ASSET_NAME)
+      .maybeSingle();
+
+    let assetId = existing?.id || null;
+
+    if (!assetId) {
+      const { data: inserted, error: insertError } = await supabase
+        .from('assets')
+        .insert({
+          project_id: projectId,
+          branch_id: branchId,
+          owner_id: ownerId,
+          name: DEFAULT_SKYBOX_ASSET_NAME,
+          type: 'cubemap',
+          // Minimal cubemap data; the DDS file provides the actual prefiltered cubemap.
+          data: {
+            name: DEFAULT_SKYBOX_ASSET_NAME,
+            textures: [null, null, null, null, null, null],
+            minFilter: 5,
+            magFilter: 1,
+            anisotropy: 1,
+            rgbm: false
+          },
+          preload: true,
+          source: true
+        })
+        .select('id')
+        .single();
+
+      if (insertError || !inserted?.id) {
+        console.warn('[realtime] default skybox: asset insert failed', insertError?.message || insertError);
+        return null;
+      }
+
+      assetId = inserted.id;
+    }
+
+    // Ensure file exists in storage (upload once)
+    const storagePath = `${projectId}/${branchId}/${assetId}/${DEFAULT_SKYBOX_FILENAME}`;
+
+    // If file already recorded on asset, assume it's uploaded.
+    const hasFileRecorded = !!existing?.file?.storagePath;
+
+    if (!hasFileRecorded) {
+      const buffer = await fs.readFile(DEFAULT_SKYBOX_SOURCE_FILE);
+      const bucket = getAssetsBucket();
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(storagePath, buffer, {
+          upsert: true,
+          contentType: 'image/dds'
+        });
+
+      if (uploadError) {
+        console.warn('[realtime] default skybox: upload failed', uploadError.message || uploadError);
+        return null;
+      }
+
+      const fileInfo = {
+        filename: DEFAULT_SKYBOX_FILENAME,
+        size: buffer.length,
+        mime: 'image/dds',
+        url: `/api/assets/${assetId}/file/${encodeURIComponent(DEFAULT_SKYBOX_FILENAME)}`,
+        storagePath
+      };
+
+      const { error: updateError } = await supabase
+        .from('assets')
+        .update({ file: fileInfo })
+        .eq('id', assetId);
+
+      if (updateError) {
+        console.warn('[realtime] default skybox: file update failed', updateError.message || updateError);
+        // not fatal; file exists in storage
+      }
+    }
+
+    skyboxAssetCache.set(cacheKey, assetId);
+    return assetId;
+  } catch (err) {
+    console.warn('[realtime] default skybox: unexpected error', err);
+    return null;
+  }
+};
+
 const isPlainObject = (value) => {
   return value && typeof value === 'object' && !Array.isArray(value);
 };
@@ -225,12 +343,67 @@ const ensureSceneDoc = (connection, scene) => new Promise((resolve) => {
       settings: DEFAULT_SCENE_SETTINGS
     };
 
-    if (!doc.type) {
-      doc.create(baseData, 'json0', (createErr) => {
-        if (createErr) {
-          console.error(`[realtime] create error scenes:${sceneId}`, createErr);
+    const getDefaultSkyboxAssetId = async () => {
+      if (!DEFAULT_SKYBOX_ENABLED) {
+        return null;
+      }
+
+      const supabase = createSupabaseClient();
+      if (!supabase) {
+        return null;
+      }
+
+      try {
+        const sceneKey = sceneId;
+
+        // Prefer lookup by unique_id (string), fallback to numeric id if possible.
+        let sceneRow = null;
+        const { data: byUnique } = await supabase
+          .from('scenes')
+          .select('project_id, branch_id, owner_id')
+          .eq('unique_id', sceneKey)
+          .maybeSingle();
+        sceneRow = byUnique || null;
+
+        if (!sceneRow && /^\d+$/.test(sceneKey)) {
+          const { data: byId } = await supabase
+            .from('scenes')
+            .select('project_id, branch_id, owner_id')
+            .eq('id', Number(sceneKey))
+            .maybeSingle();
+          sceneRow = byId || null;
         }
-        resolve();
+
+        if (!sceneRow?.project_id) {
+          return null;
+        }
+
+        const projectId = sceneRow.project_id;
+        const branchId = sceneRow.branch_id || (scene.branch_id || 'main');
+        const ownerId = sceneRow.owner_id || 'anonymous';
+        return await ensureDefaultSkyboxAsset({ supabase, projectId, branchId, ownerId });
+      } catch {
+        return null;
+      }
+    };
+
+    if (!doc.type) {
+      (async () => {
+        const skyboxAssetId = await getDefaultSkyboxAssetId();
+        if (skyboxAssetId) {
+          baseData.settings = baseData.settings || {};
+          baseData.settings.render = baseData.settings.render || {};
+          if (!baseData.settings.render.skybox) {
+            baseData.settings.render.skybox = skyboxAssetId;
+          }
+        }
+      })().finally(() => {
+        doc.create(baseData, 'json0', (createErr) => {
+          if (createErr) {
+            console.error(`[realtime] create error scenes:${sceneId}`, createErr);
+          }
+          resolve();
+        });
       });
       return;
     }
@@ -249,17 +422,27 @@ const ensureSceneDoc = (connection, scene) => new Promise((resolve) => {
       ops.push({ p: ['entities'], od: doc.data?.entities, oi: nextEntities });
     }
 
-    if (!ops.length) {
-      resolve();
-      return;
-    }
-
-    doc.submitOp(ops, (opErr) => {
-      if (opErr) {
-        console.error(`[realtime] patch error scenes:${sceneId}`, opErr);
+    (async () => {
+      const currentRender = doc.data?.settings?.render || {};
+      if (!currentRender.skybox) {
+        const skyboxAssetId = await getDefaultSkyboxAssetId();
+        if (skyboxAssetId) {
+          ops.push({ p: ['settings', 'render', 'skybox'], oi: skyboxAssetId });
+        }
       }
-      resolve();
-    });
+
+      if (!ops.length) {
+        resolve();
+        return;
+      }
+
+      doc.submitOp(ops, (opErr) => {
+        if (opErr) {
+          console.error(`[realtime] patch error scenes:${sceneId}`, opErr);
+        }
+        resolve();
+      });
+    })();
   });
 });
 
