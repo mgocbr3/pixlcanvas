@@ -1,0 +1,78 @@
+/**
+ * Improve visibility of hierarchy root entity icons
+ * Adjust across all three themes (dark, neutral, light)
+ */
+
+// Increase opacity of treeview item icons (especially root entities)
+.pcui-treeview-item {
+    > .pcui-treeview-item-contents {
+        > .pcui-treeview-item-icon {
+            // Increase icon opacity to make them more visible
+            opacity: 0.7;
+
+            &::before,
+            &::after {
+                opacity: 0.8;
+            }
+        }
+
+        &:hover {
+            > .pcui-treeview-item-icon {
+                opacity: 0.9;
+            }
+        }
+
+        &.pcui-treeview-item-selected {
+            > .pcui-treeview-item-icon {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+// Ensure root entities have slightly better visibility
+.pcui-treeview-item.root-entity,
+.entities-treeview-item.root {
+    > .pcui-treeview-item-contents {
+        > .pcui-treeview-item-icon {
+            opacity: 0.75;
+
+            &::before,
+            &::after {
+                opacity: 0.85;
+            }
+        }
+    }
+}
+
+// Entity icons in hierarchy specifically
+.entities-treeview {
+    .pcui-treeview-item {
+        > .pcui-treeview-item-contents {
+            > .pcui-treeview-item-icon {
+                // Make entity icons clearer
+                opacity: 0.7;
+                filter: brightness(1.15);
+
+                &::before,
+                &::after {
+                    opacity: 0.85;
+                }
+            }
+
+            &:hover {
+                > .pcui-treeview-item-icon {
+                    opacity: 0.9;
+                    filter: brightness(1.25);
+                }
+            }
+
+            &.pcui-treeview-item-selected {
+                > .pcui-treeview-item-icon {
+                    opacity: 1;
+                    filter: brightness(1.35);
+                }
+            }
+        }
+    }
+}
