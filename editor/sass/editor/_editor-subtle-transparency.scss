@@ -1,0 +1,60 @@
+/**
+ * Slight transparency (5%) on panels and tabs only
+ * No buttons affected
+ */
+
+// Painéis com 5% transparência
+.pcui-panel,
+.pcui-panel-content {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+// Caixas e containers
+.pcui-container,
+.pcui-scrollView {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+// Abas com transparência
+.pcui-tabs-tab {
+    background: rgba(0, 0, 0, 0.05) !important;
+    
+    &:hover {
+        background: rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    &.active,
+    &.pcui-selected {
+        background: rgba(0, 0, 0, 0.1) !important;
+    }
+}
+
+// Painéis de header
+.pcui-panel-header {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+// Listboxes e treeviews
+.pcui-listbox,
+.pcui-treeview {
+    background: rgba(0, 0, 0, 0.05) !important;
+    
+    .pcui-listbox-item,
+    .pcui-treeview-item {
+        background: transparent !important;
+        
+        &:hover {
+            background: rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        &.selected,
+        &.pcui-selected {
+            background: rgba(0, 0, 0, 0.12) !important;
+        }
+    }
+}
+
+// Overlays e diálogos
+.pcui-overlay {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
