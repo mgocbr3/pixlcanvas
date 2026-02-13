@@ -1,0 +1,15 @@
+// ============================================================================
+// Hierarchy Tree Branch/Connector Lines - Improved Visibility
+// Makes the parent-child connector lines ~20% more visible
+// Applied to all themes (dark, neutral, light)
+// ============================================================================
+
+// Vertical branch lines (parent-child connectors)
+.pcui-treeview-item::before {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+// Horizontal branch lines (icon connectors)
+.pcui-treeview-item-icon::before {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
