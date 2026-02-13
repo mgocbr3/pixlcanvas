@@ -1,0 +1,168 @@
+/**
+ * Apple Liquid Glass / Glassmorphism theme
+ * Minimalista e elegante com efeito translúcido
+ */
+
+// Cores base do glassmorphism
+$glass-bg-light: rgba(255, 255, 255, 0.08);
+$glass-bg-lighter: rgba(255, 255, 255, 0.05);
+$glass-border: rgba(255, 255, 255, 0.15);
+$glass-shadow: rgba(0, 0, 0, 0.2);
+
+// Aplicar ao root layout
+#layout-root {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(20, 20, 35, 0.95) 100%);
+}
+
+// Painéis principais com glassmorphism
+#layout-hierarchy,
+#layout-attributes-secondary,
+#layout-assets,
+#layout-attributes,
+#layout-console,
+#layout-toolbar {
+    background: $glass-bg-light !important;
+    backdrop-filter: blur(10px) saturate(100%) brightness(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(100%) brightness(1.1);
+    border-right: 1px solid $glass-border;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+// Ajustar footer toolbar
+#layout-toolbar {
+    background: linear-gradient(180deg, $glass-bg-light 0%, $glass-bg-lighter 100%) !important;
+    border-bottom: 1px solid $glass-border;
+    border-right: none;
+    box-shadow: inset 0 -1px 0 0 $glass-border, 0 2px 8px $glass-shadow;
+}
+
+// Viewport mantém preto para melhor contraste
+#layout-viewport {
+    background-color: #000 !important;
+}
+
+// Painéis e containers internos
+.pcui-panel,
+.pcui-panel-content,
+.pcui-container {
+    background: rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+// Overlay glass effect para diálogos e popups
+.pcui-overlay,
+.pcui-messagebox,
+.pcui-confirm-popup {
+    background: $glass-bg-light !important;
+    backdrop-filter: blur(10px) saturate(100%);
+    -webkit-backdrop-filter: blur(10px) saturate(100%);
+    border: 1px solid $glass-border;
+    box-shadow: 0 8px 32px $glass-shadow;
+    border-radius: 12px;
+}
+
+// Suavizar elementos com scroll
+.pcui-scrollView {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+// Botões e inputs com efeito glassy
+.pcui-button,
+.pcui-input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.2s ease-in-out;
+    
+    &:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    
+    &:active {
+        background: rgba(255, 255, 255, 0.2) !important;
+    }
+}
+
+// Labels e texto
+.pcui-label {
+    background: transparent !important;
+}
+
+// Separadores
+.pcui-divider {
+    background: $glass-border !important;
+}
+
+// Ícones com melhor visibilidade
+.pcui-icon {
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+    
+    &:hover {
+        opacity: 1;
+    }
+}
+
+// Efeito de profundidade para painéis aninhados
+.pcui-panel-header {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
+    border-bottom: 1px solid $glass-border;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+// Tabs com efeito glassy
+.pcui-tabs-tab {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid $glass-border !important;
+    transition: all 0.2s ease;
+    
+    &.active,
+    &:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+// Suavizar listboxes e treeviews
+.pcui-listbox,
+.pcui-treeview {
+    background: rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    
+    .pcui-listbox-item,
+    .pcui-treeview-item {
+        background: transparent !important;
+        
+        &:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        &.selected {
+            background: rgba(255, 255, 255, 0.15) !important;
+            box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+    }
+}
+
+// Console com glassmorphism
+#layout-console {
+    .pcui-code,
+    .pcui-code-line {
+        background: rgba(0, 0, 0, 0.2) !important;
+    }
+}
+
+// Suavizar transições globalmente
+* {
+    transition-property: background, border-color, box-shadow, color;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-in-out;
+}
